@@ -1,1 +1,5 @@
-{}
+{:deps {ring/ring-core {:mvn/version "1.9.5"}
+        ring/ring-jetty-adapter {:mvn/version "1.9.5"}
+        ring/ring-defaults {:mvn/version "0.3.3"}
+        ring/ring-json {:mvn/version "0.5.1"}
+        metosin/reitit-ring {:mvn/version "0.5.15"}}}
