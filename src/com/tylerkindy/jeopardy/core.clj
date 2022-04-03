@@ -16,7 +16,6 @@
       (wrap-defaults api-defaults)))
 
 (defn start-server [join?]
-
   (run-jetty app {:port (Integer/parseInt (or (get (System/getenv) "PORT")
                                               "3000"))
                   :join? join?}))
