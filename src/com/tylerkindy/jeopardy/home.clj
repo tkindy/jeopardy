@@ -5,4 +5,6 @@
   (html5
    {:lang :en}
    [:body
-    [:h1 "Jeopardy"]]))
+    [:h1 "Jeopardy"]
+
+    [:script {:src "/public/htmx.min.js"}]]))
