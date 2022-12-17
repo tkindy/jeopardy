@@ -29,8 +29,8 @@
         response (if (= (str/lower-case (:answer clue))
                         (str/lower-case answer))
                    "That's right!"
-                   "Incorrect")]
-    (html (answer-form response))))
+                   "Incorrect.")]
+    (html (answer-form (str response " " (:answer clue))))))
 
 (defn receive-message [ch message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
