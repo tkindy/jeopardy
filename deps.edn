@@ -1,6 +1,8 @@
 {:deps
  {http-kit/http-kit {:mvn/version "2.6.0"}
-  mount/mount {:mvn/version "0.1.16"}}
+  mount/mount {:mvn/version "0.1.16"}
+  hiccup/hiccup {:mvn/version "1.0.5"}
+  compojure/compojure {:mvn/version "1.7.0"}}
 
  :aliases
  {:repl

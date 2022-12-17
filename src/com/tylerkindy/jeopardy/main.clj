@@ -1,10 +1,11 @@
 (ns com.tylerkindy.jeopardy.main
   (:require [mount.core :refer [defstate] :as mount]
-            [org.httpkit.server :refer [run-server as-channel send! server-stop!]]))
+            [org.httpkit.server :refer [run-server as-channel send! server-stop!]]
+            [com.tylerkindy.jeopardy.routes :refer [routes]]))
 
 (defn app [req]
   (if-not (:websocket? req)
-    {:status 200, :body "Hello, World!"}
+    (routes req)
     (as-channel req
                 {:on-receive (fn [ch message] (send! ch message))})))
 
