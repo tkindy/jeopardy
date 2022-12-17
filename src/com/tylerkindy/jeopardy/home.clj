@@ -8,7 +8,7 @@
     [:h1 "Jeopardy"]
 
     [:div {:hx-ext :ws, :ws-connect "/"}
-     [:div#question "Loading..."]
+     [:div#clue "Loading..."]
      [:form#answer {:ws-send ""}
       [:input {:name "answer"}]]]
 

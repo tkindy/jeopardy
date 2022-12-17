@@ -7,9 +7,11 @@
 
 (defonce clue (atom nil))
 
-(defn render-question [{:keys [question]}]
+(defn render-question [{:keys [category question]}]
   (html
-   [:div#question question]))
+   [:div#clue
+    [:p.category (:title category)]
+    [:p.question question]]))
 
 (defn send-clue [ch]
   (send! ch (render-question @clue)))
