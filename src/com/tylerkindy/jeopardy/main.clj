@@ -32,14 +32,18 @@
                    "Incorrect")]
     (html (answer-form response))))
 
+(defn receive-message [ch message]
+  (let [{:keys [type] :as message} (json/parse-string message keyword)]
+    (case (keyword type)
+      :answer (send! ch (check-answer message))
+      :new-question (new-clue ch))))
+
 (defn app [req]
   (if-not (:websocket? req)
     (routes req)
     (as-channel req
                 {:on-open new-clue
-                 :on-receive (fn [ch message]
-                               (send! ch
-                                      (check-answer (json/parse-string message keyword))))})))
+                 :on-receive receive-message})))
 
 (defn start-server []
   (run-server app {:port 8080
