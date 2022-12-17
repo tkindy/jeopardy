@@ -7,4 +7,5 @@
    [:body
     [:h1 "Jeopardy"]
 
-    [:script {:src "/public/htmx@1.8.4/htmx.min.js"}]]))
+    [:script {:src "/public/htmx@1.8.4/htmx.min.js"}]
+    [:script {:src "/public/htmx@1.8.4/ext/ws.min.js"}]]))
