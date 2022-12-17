@@ -3,7 +3,10 @@
             [org.httpkit.server :refer [run-server as-channel send! server-stop!]]
             [com.tylerkindy.jeopardy.routes :refer [routes]]
             [hiccup.core :refer [html]]
-            [com.tylerkindy.jeopardy.jservice :refer [random-clue]]))
+            [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
+            [cheshire.core :as json]
+            [clojure.string :as str]
+            [com.tylerkindy.jeopardy.home :refer [answer-form]]))
 
 (defonce clue (atom nil))
 
@@ -21,12 +24,22 @@
     (reset! clue new)
     (send-clue ch)))
 
+(defn check-answer [{:keys [answer]}]
+  (let [clue @clue
+        response (if (= (str/lower-case (:answer clue))
+                        (str/lower-case answer))
+                   "That's right!"
+                   "Incorrect")]
+    (html (answer-form response))))
+
 (defn app [req]
   (if-not (:websocket? req)
     (routes req)
     (as-channel req
                 {:on-open new-clue
-                 :on-receive (fn [ch _] (new-clue ch))})))
+                 :on-receive (fn [ch message]
+                               (send! ch
+                                      (check-answer (json/parse-string message keyword))))})))
 
 (defn start-server []
   (run-server app {:port 8080
