@@ -52,6 +52,8 @@
     (reset! clue new)
     (send-clue ch)))
 
+; TODO: implement edit distance
+; TODO: strip HTML (I've seen <a>, <i>)
 (defn check-answer [{:keys [answer]}]
   (let [clue @clue
         response (if (= (str/lower-case (:answer clue))
