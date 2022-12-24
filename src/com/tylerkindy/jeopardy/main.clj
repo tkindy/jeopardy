@@ -1,6 +1,8 @@
 (ns com.tylerkindy.jeopardy.main
   (:require [mount.core :refer [defstate] :as mount]
             [org.httpkit.server :refer [run-server as-channel send! server-stop!]]
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [ring.middleware.session.cookie :refer [cookie-store]]
             [com.tylerkindy.jeopardy.routes :refer [routes]]
             [hiccup.core :refer [html]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
@@ -46,9 +48,20 @@
                 {:on-open new-clue
                  :on-receive receive-message})))
 
+(defn parse-session-secret [secret]
+  (-> (java.util.HexFormat/of)
+      (.parseHex secret)))
+
+(defstate app-settings
+  :start (-> site-defaults
+             (assoc-in [:session :store]
+                       (cookie-store {:key (parse-session-secret
+                                            (get-in config [:http :session-secret]))}))))
+
 (defn start-server []
-  (run-server app {:port (get-in config [:http :port])
-                   :legacy-return-value? false}))
+  (run-server (wrap-defaults app app-settings)
+              {:port (get-in config [:http :port])
+               :legacy-return-value? false}))
 
 (defstate server
   :start (start-server)
