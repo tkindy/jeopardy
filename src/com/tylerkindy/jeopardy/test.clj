@@ -5,7 +5,8 @@
             [hiccup.page :refer [html5]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [cheshire.core :as json]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [com.tylerkindy.jeopardy.common :refer [scripts]]))
 
 (defn answer-form [response]
   [:form#answer-form {:ws-send "", :hx-swap-oob "morph"}
@@ -27,9 +28,7 @@
       [:input {:name :type, :value :new-question, :hidden ""}]
       [:button "New question"]]]
 
-    [:script {:src "/public/htmx@1.8.4/htmx.min.js"}]
-    [:script {:src "/public/htmx@1.8.4/ext/ws.min.js"}]
-    [:script {:src "/public/idiomorph@0.0.8/idiomorph-ext.min.js"}]]))
+    scripts]))
 
 (defn test-page-response []
   {:status 200
