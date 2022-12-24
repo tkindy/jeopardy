@@ -57,7 +57,8 @@
              (assoc-in [:session :store]
                        (cookie-store {:key (parse-session-secret
                                             (get-in config [:http :session-secret]))}))
-             (assoc-in [:session :cookie-name] "jeopardy-session")))
+             (assoc-in [:session :cookie-name] "jeopardy-session")
+             (assoc-in [:session :cookie-attrs :max-age] (* 10 365 24 60 60))))
 
 (defn start-server []
   (run-server (wrap-defaults app app-settings)
