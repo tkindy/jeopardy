@@ -1,0 +1,4 @@
+CREATE TABLE rooms (
+  id VARCHAR(6) PRIMARY KEY,
+  mode SMALLINT NOT NULL
+);
