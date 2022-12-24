@@ -10,3 +10,8 @@
 
 (defn migrate []
   (migratus/migrate migration-config))
+
+(comment (migrate))
+
+(defn create [name]
+  (migratus/create migration-config name))
