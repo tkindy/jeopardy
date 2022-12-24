@@ -1,1 +1,1 @@
-DROP INDEX idx_players_gameId;
+DROP INDEX idx_players_game_id;
