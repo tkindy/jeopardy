@@ -6,7 +6,8 @@
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [cheshire.core :as json]
             [clojure.string :as str]
-            [com.tylerkindy.jeopardy.home :refer [answer-form]]))
+            [com.tylerkindy.jeopardy.home :refer [answer-form]]
+            [com.tylerkindy.jeopardy.config :refer [config]]))
 
 (defonce clue (atom nil))
 
@@ -46,12 +47,12 @@
                  :on-receive receive-message})))
 
 (defn start-server []
-  (run-server app {:port 8080
+  (run-server app {:port (get-in config [:http :port])
                    :legacy-return-value? false}))
 
 (defstate server
   :start (start-server)
   :stop (server-stop! server))
 
-(defn -main []
-  (mount/start))
+(defn -main [& args]
+  (mount/start-with-args {:cli-args args}))

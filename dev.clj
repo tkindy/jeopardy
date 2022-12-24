@@ -6,7 +6,7 @@
             [nrepl.core :as nrepl]))
 
 (defn start []
-  (mount/start))
+  (mount/start-with-args {:cli-args []}))
 
 (defn stop []
   (mount/stop))
