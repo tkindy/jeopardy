@@ -56,7 +56,8 @@
   :start (-> site-defaults
              (assoc-in [:session :store]
                        (cookie-store {:key (parse-session-secret
-                                            (get-in config [:http :session-secret]))}))))
+                                            (get-in config [:http :session-secret]))}))
+             (assoc-in [:session :cookie-name] "jeopardy-session")))
 
 (defn start-server []
   (run-server (wrap-defaults app app-settings)
