@@ -1,6 +1,6 @@
 (ns com.tylerkindy.jeopardy.home
   (:require [hiccup.page :refer [html5]]
-            [com.tylerkindy.jeopardy.common :refer [scripts]]))
+            [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
 (defn home []
   (html5
@@ -8,6 +8,7 @@
    [:body
     [:h1 "Jeopardy"]
 
-    [:p "Home"]
-
-    scripts]))
+    [:form {:action "/games"
+            :method :post}
+     (anti-forgery-field)
+     [:button "New game"]]]))
