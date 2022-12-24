@@ -9,7 +9,8 @@
             [cheshire.core :as json]
             [clojure.string :as str]
             [com.tylerkindy.jeopardy.home :refer [answer-form]]
-            [com.tylerkindy.jeopardy.config :refer [config]]))
+            [com.tylerkindy.jeopardy.config :refer [config]]
+            [com.tylerkindy.jeopardy.db.migrations :refer [migrate]]))
 
 (defonce clue (atom nil))
 
@@ -61,6 +62,7 @@
              (assoc-in [:session :cookie-attrs :max-age] (* 10 365 24 60 60))))
 
 (defn start-server []
+  (migrate)
   (run-server (wrap-defaults app app-settings)
               {:port (get-in config [:http :port])
                :legacy-return-value? false}))
