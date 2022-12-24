@@ -1,11 +1,28 @@
 (ns com.tylerkindy.jeopardy.games
-  (:require [compojure.core :refer [defroutes context POST GET]]))
+  (:require [compojure.core :refer [defroutes context POST GET]]
+            [com.tylerkindy.jeopardy.db.core :refer [ds]]
+            [com.tylerkindy.jeopardy.db.games :refer [insert-game]]))
 
-(defn create-game [{:keys [params]}]
-  (println params)
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body "<p>Thanks!</p>"})
+
+(defn char-range [start end]
+  (->> (range (int start) (inc (int end)))
+       (map char)))
+(def game-id-characters
+  (->> [(char-range \A \Z) (char-range \0 \9)]
+       (apply concat)
+       (into [])))
+(defn generate-game-id []
+  (->> (range 6)
+       (map (fn [_] (rand-nth game-id-characters)))
+       (apply str)))
+
+; modes: 0 -> endless
+
+(defn create-game []
+  (let [id (generate-game-id)]
+    (insert-game ds {:id id, :mode 0})
+    {:status 303
+     :headers {"Location" (str "/games/" id)}}))
 
 (defn game-page-response [game-id]
   {:status 200
@@ -14,5 +31,5 @@
 
 (defroutes game-routes
   (context "/games" []
-    (POST "/" request (create-game request))
+    (POST "/" [] (create-game))
     (GET "/:game-id" [game-id] (game-page-response game-id))))
