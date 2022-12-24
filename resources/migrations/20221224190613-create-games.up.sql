@@ -1,4 +1,4 @@
-CREATE TABLE rooms (
+CREATE TABLE games (
   id VARCHAR(6) PRIMARY KEY,
   mode SMALLINT NOT NULL
 );
