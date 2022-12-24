@@ -13,5 +13,10 @@
 
 (comment (migrate))
 
+(defn reset []
+  (migratus/reset migration-config))
+
+(comment (reset))
+
 (defn create [name]
   (migratus/create migration-config name))
