@@ -61,14 +61,16 @@
              (assoc-in [:session :cookie-name] "jeopardy-session")
              (assoc-in [:session :cookie-attrs :max-age] (* 10 365 24 60 60))))
 
-(defn start-server []
-  (migrate)
+(defn start-server [migrate?]
+  (when migrate?
+    (migrate))
+
   (run-server (wrap-defaults app app-settings)
               {:port (get-in config [:http :port])
                :legacy-return-value? false}))
 
 (defstate server
-  :start (start-server)
+  :start (start-server (get-in config [:db :migrate-on-startup?]))
   :stop (server-stop! server))
 
 (defn -main [& args]
