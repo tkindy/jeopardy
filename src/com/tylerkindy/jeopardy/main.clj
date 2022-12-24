@@ -27,6 +27,7 @@
               {:port (get-in config [:http :port])
                :legacy-return-value? false}))
 
+#_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defstate server
   :start (start-server (get-in config [:db :migrate-on-startup?]))
   :stop (server-stop! server))
