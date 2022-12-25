@@ -6,7 +6,8 @@
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
-            [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]))
+            [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]
+            [org.httpkit.server :refer [as-channel send!]]))
 
 
 (defn char-range [start end]
@@ -26,6 +27,25 @@
     (insert-game ds {:id id, :mode 0})
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
+
+(defonce game-states (atom {}))
+
+(defn connect-player [game-id player-id ch]
+  (swap! game-states assoc-in [game-id :players player-id] ch))
+
+(defn disconnect-player [game-id player-id]
+  (swap! game-states update-in [game-id :players] dissoc player-id))
+
+(defn game-websocket [req]
+  (let [{:keys [game-id]} (:params req)
+        {player-id :id} (:session req)]
+    (if player-id
+      (as-channel req
+                  {:on-open (fn [ch] (connect-player game-id player-id ch))
+                   :on-close (fn [_ _] (disconnect-player game-id player-id))})
+      {:status 400
+       :headers {"Content-Type" "text/html"}
+       :body "<p>You're not logged in</p>"})))
 
 (defn render-clue [{:keys [question]}]
   [:p question])
@@ -85,9 +105,14 @@
        :headers {"Content-Type" "text/html"}
        :body "<p>Game not found</p>"})))
 
+(defn handle-game-request [req]
+  (if (:websocket? req)
+    (game-websocket req)
+    (game-page-response req)))
+
 (defroutes game-routes
   (context "/games" []
     (POST "/" [] (create-game))
     (context "/:game-id" []
-      (GET "/" req (game-page-response req))
+      (GET "/" req (handle-game-request req))
       player-routes)))
