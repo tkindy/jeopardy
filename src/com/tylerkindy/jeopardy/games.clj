@@ -4,7 +4,8 @@
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
             [hiccup.page :refer [html5]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
-            [com.tylerkindy.jeopardy.players :refer [player-routes]]))
+            [com.tylerkindy.jeopardy.players :refer [player-routes]]
+            [com.tylerkindy.jeopardy.db.players :refer [get-player]]))
 
 
 (defn char-range [start end]
@@ -55,7 +56,7 @@
 
 (defn endless-response [game req]
   (let [player-id (get-in req [:session :id])]
-    (if player-id
+    (if (get-player ds {:id player-id, :game-id (:id game)})
       (endless-logged-in game req)
       (endless-anon game req))))
 
