@@ -3,12 +3,15 @@
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
             [hiccup.page :refer [html5]]
+            [hiccup.core :refer [html]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]
             [org.httpkit.server :refer [as-channel send!]]
-            [com.tylerkindy.jeopardy.common :refer [scripts]]))
+            [com.tylerkindy.jeopardy.common :refer [scripts]]
+            [cheshire.core :as json]
+            [com.tylerkindy.jeopardy.jservice :refer [random-clue]]))
 
 
 (defn char-range [start end]
@@ -37,32 +40,55 @@
 (defn disconnect-player [game-id player-id]
   (swap! game-states update-in [game-id :players] dissoc player-id))
 
-(defn game-websocket [req]
-  (let [{:keys [game-id]} (:params req)
-        {player-id :id} (:session req)]
-    (if player-id
-      (as-channel req
-                  {:on-open (fn [ch] (connect-player game-id player-id ch))
-                   :on-close (fn [_ _] (disconnect-player game-id player-id))})
-      {:status 400
-       :headers {"Content-Type" "text/html"}
-       :body "<p>You're not logged in</p>"})))
-
 (defn render-clue [{:keys [question]}]
   [:p question])
 
 (defn render-no-clue []
   [:i "No question yet"])
 
+(defn clue-view [clue]
+  [:div#clue
+   (if clue
+     (render-clue clue)
+     (render-no-clue))])
+
+(defn new-clue [game-id]
+  (let [clue (-> (random-clue)
+                 (select-keys [:question :answer :value])
+                 (assoc :game-id game-id))]
+    (insert-clue ds clue)
+    (let [message (html (clue-view clue))
+          channels (-> (get-in @game-states [game-id :players])
+                       vals)]
+      (doseq [channel channels]
+        (send! channel message)))))
+
+(defn receive-message [game-id player-id ch message]
+  (let [{:keys [type] :as message} (json/parse-string message keyword)]
+    (case (keyword type)
+      :new-question (new-clue game-id))))
+
+(defn game-websocket [req]
+  (let [{:keys [game-id]} (:params req)
+        {player-id :id} (:session req)]
+    (if player-id
+      (as-channel req
+                  {:on-open (fn [ch] (connect-player game-id player-id ch))
+                   :on-close (fn [_ _] (disconnect-player game-id player-id))
+                   :on-receive (fn [ch message] (receive-message game-id player-id ch message))})
+      {:status 400
+       :headers {"Content-Type" "text/html"}
+       :body "<p>You're not logged in</p>"})))
+
 (defn endless-logged-in-page [{game-id :id} req]
   (let [clue (get-current-clue ds {:game-id game-id})]
     (html5
      {:lang :en}
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
-      [:div.clue
-       (if clue
-         (render-clue clue)
-         (render-no-clue))]
+      (clue-view clue)
+      [:form {:ws-send ""}
+       [:input {:name :type, :value :new-question, :hidden ""}]
+       [:button "New question"]]
 
       scripts])))
 
