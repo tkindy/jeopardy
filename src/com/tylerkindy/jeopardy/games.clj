@@ -37,7 +37,7 @@
    :headers {"Content-Type" "text/html"}
    :body (endless-logged-in-page game req)})
 
-(defn endless-anon-page [{game-id :id} req]
+(defn endless-anon-page [{game-id :id}]
   (html5
    {:lang :en}
    [:body
@@ -49,16 +49,16 @@
      (anti-forgery-field)
      [:button "Join game"]]]))
 
-(defn endless-anon [game req]
+(defn endless-anon [game]
   {:status 200
    :headers {"Content-Type" "text/html"}
-   :body (endless-anon-page game req)})
+   :body (endless-anon-page game)})
 
 (defn endless-response [game req]
   (let [player-id (get-in req [:session :id])]
     (if (get-player ds {:id player-id, :game-id (:id game)})
       (endless-logged-in game req)
-      (endless-anon game req))))
+      (endless-anon game))))
 
 (defn found-game-response [{:keys [mode] :as game} req]
   (case mode
