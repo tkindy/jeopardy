@@ -5,7 +5,8 @@
             [hiccup.page :refer [html5]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
-            [com.tylerkindy.jeopardy.db.players :refer [get-player]]))
+            [com.tylerkindy.jeopardy.db.players :refer [get-player]]
+            [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]))
 
 
 (defn char-range [start end]
@@ -26,11 +27,21 @@
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
 
-(defn endless-logged-in-page [game req]
-  (html5
-   {:lang :en}
-   [:body
-    [:p (str "You are user " (get-in req [:session :id]))]]))
+(defn render-clue [{:keys [question]}]
+  [:p question])
+
+(defn render-no-clue []
+  [:i "No question yet"])
+
+(defn endless-logged-in-page [{game-id :id} req]
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    (html5
+     {:lang :en}
+     [:body
+      [:div.clue
+       (if clue
+         (render-clue clue)
+         (render-no-clue))]])))
 
 (defn endless-logged-in [game req]
   {:status 200
