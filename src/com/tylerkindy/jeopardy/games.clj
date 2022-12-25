@@ -7,7 +7,8 @@
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]
-            [org.httpkit.server :refer [as-channel send!]]))
+            [org.httpkit.server :refer [as-channel send!]]
+            [com.tylerkindy.jeopardy.common :refer [scripts]]))
 
 
 (defn char-range [start end]
@@ -57,11 +58,13 @@
   (let [clue (get-current-clue ds {:game-id game-id})]
     (html5
      {:lang :en}
-     [:body
+     [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       [:div.clue
        (if clue
          (render-clue clue)
-         (render-no-clue))]])))
+         (render-no-clue))]
+
+      scripts])))
 
 (defn endless-logged-in [game req]
   {:status 200
