@@ -2,7 +2,9 @@
   (:require [compojure.core :refer [defroutes context POST GET]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
-            [hiccup.page :refer [html5]]))
+            [hiccup.page :refer [html5]]
+            [ring.util.anti-forgery :refer [anti-forgery-field]]
+            [com.tylerkindy.jeopardy.players :refer [player-routes]]))
 
 
 (defn char-range [start end]
@@ -27,18 +29,24 @@
   (html5
    {:lang :en}
    [:body
-    [:p (str "You are user " (get-in req [:params :id]))]]))
+    [:p (str "You are user " (get-in req [:session :id]))]]))
 
 (defn endless-logged-in [game req]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body (endless-logged-in-page game req)})
 
-(defn endless-anon-page [game req]
+(defn endless-anon-page [{game-id :id} req]
   (html5
    {:lang :en}
    [:body
-    [:p "You are logged out"]]))
+    [:form {:method :post
+            :action (str "/games/" game-id "/players")}
+     [:label {:for "name"} "Username"]
+     [:input {:id "name" :name "name" :type :text
+              :minlength 1 :maxlength 24}]
+     (anti-forgery-field)
+     [:button "Join game"]]]))
 
 (defn endless-anon [game req]
   {:status 200
@@ -57,7 +65,7 @@
     (throw (RuntimeException. (str "Unknown mode: " mode)))))
 
 (defn game-page-response [req]
-  (let [id (get-in req [:params :id])
+  (let [id (get-in req [:params :game-id])
         game (get-game ds {:id id})]
     (if game
       (found-game-response game req)
@@ -68,4 +76,6 @@
 (defroutes game-routes
   (context "/games" []
     (POST "/" [] (create-game))
-    (GET "/:id" req (game-page-response req))))
+    (context "/:game-id" []
+      (GET "/" req (game-page-response req))
+      player-routes)))
