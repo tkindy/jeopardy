@@ -5,7 +5,8 @@
             [ring.middleware.session.cookie :refer [cookie-store]]
             [com.tylerkindy.jeopardy.routes :refer [routes]]
             [com.tylerkindy.jeopardy.config :refer [config]]
-            [com.tylerkindy.jeopardy.db.migrations :refer [migrate]]))
+            [com.tylerkindy.jeopardy.db.migrations :refer [migrate]])
+  (:gen-class))
 
 (defn parse-session-secret [secret]
   (-> (java.util.HexFormat/of)
