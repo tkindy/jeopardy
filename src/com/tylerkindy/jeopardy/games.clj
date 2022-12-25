@@ -23,23 +23,44 @@
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
 
-(defn endless-page [game]
+(defn endless-logged-in-page [game req]
   (html5
    {:lang :en}
    [:body
-    [:p "Hi!"]]))
+    [:p (str "You are user " (get-in req [:params :id]))]]))
 
-(defn game-page [{:keys [mode] :as game}]
+(defn endless-logged-in [game req]
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body (endless-logged-in-page game req)})
+
+(defn endless-anon-page [game req]
+  (html5
+   {:lang :en}
+   [:body
+    [:p "You are logged out"]]))
+
+(defn endless-anon [game req]
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body (endless-anon-page game req)})
+
+(defn endless-response [game req]
+  (let [player-id (get-in req [:session :id])]
+    (if player-id
+      (endless-logged-in game req)
+      (endless-anon game req))))
+
+(defn found-game-response [{:keys [mode] :as game} req]
   (case mode
-    0 (endless-page game)
+    0 (endless-response game req)
     (throw (RuntimeException. (str "Unknown mode: " mode)))))
 
-(defn game-page-response [game-id]
-  (let [game (get-game ds {:id game-id})]
+(defn game-page-response [req]
+  (let [id (get-in req [:params :id])
+        game (get-game ds {:id id})]
     (if game
-      {:status 200
-       :headers {"Content-Type" "text/html"}
-       :body (game-page game)}
+      (found-game-response game req)
       {:status 404
        :headers {"Content-Type" "text/html"}
        :body "<p>Game not found</p>"})))
@@ -47,4 +68,4 @@
 (defroutes game-routes
   (context "/games" []
     (POST "/" [] (create-game))
-    (GET "/:game-id" [game-id] (game-page-response game-id))))
+    (GET "/:id" req (game-page-response req))))
