@@ -5,7 +5,7 @@
             [hiccup.core :refer [html]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
-            [com.tylerkindy.jeopardy.db.players :refer [get-player]]
+            [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]
             [org.httpkit.server :refer [as-channel send!]]
             [com.tylerkindy.jeopardy.common :refer [scripts page]]
@@ -33,11 +33,33 @@
 
 (defonce game-states (atom {}))
 
+(defn who-view [game-id]
+  (let [player-ids (or (->> (get-in @game-states [game-id :players])
+                            keys
+                            set)
+                       #{})
+        player-names (->> (list-players ds {:game-id game-id})
+                          (filter (fn [{:keys [id]}] (player-ids id)))
+                          (map :name)
+                          sort)]
+    [:div#who
+     [:p "Live players"]
+     [:ul
+      (map (fn [name] [:li name]) player-names)]]))
+
+(defn send-all! [game-id message]
+  (let [channels (-> (get-in @game-states [game-id :players])
+                     vals)]
+    (doseq [channel channels]
+      (send! channel message))))
+
 (defn connect-player [game-id player-id ch]
-  (swap! game-states assoc-in [game-id :players player-id] ch))
+  (swap! game-states assoc-in [game-id :players player-id] ch)
+  (send-all! game-id (html (who-view game-id))))
 
 (defn disconnect-player [game-id player-id]
-  (swap! game-states update-in [game-id :players] dissoc player-id))
+  (swap! game-states update-in [game-id :players] dissoc player-id)
+  (send-all! game-id (html (who-view game-id))))
 
 (defn render-clue [{:keys [question]}]
   [:p question])
@@ -56,11 +78,7 @@
                  (select-keys [:question :answer :value])
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
-    (let [message (html (clue-view clue))
-          channels (-> (get-in @game-states [game-id :players])
-                       vals)]
-      (doseq [channel channels]
-        (send! channel message)))))
+    (send-all! game-id (html (clue-view clue)))))
 
 (defn receive-message [game-id player-id ch message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
@@ -83,6 +101,7 @@
   (let [clue (get-current-clue ds {:game-id game-id})]
     (page
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
+      (who-view game-id)
       (clue-view clue)
       [:form {:ws-send ""}
        [:input {:name :type, :value :new-question, :hidden ""}]
