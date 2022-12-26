@@ -61,8 +61,10 @@
   (swap! game-states update-in [game-id :players] dissoc player-id)
   (send-all! game-id (html (who-view game-id))))
 
-(defn render-clue [{:keys [question]}]
-  [:p question])
+(defn render-clue [{:keys [category question]}]
+  (list
+   [:p [:i category]]
+   [:p question]))
 
 (defn render-no-clue []
   [:i "No question yet"])
@@ -75,7 +77,8 @@
 
 (defn new-clue [game-id]
   (let [clue (-> (random-clue)
-                 (select-keys [:question :answer :value])
+                 (select-keys [:category :question :answer :value])
+                 (update :category :title)
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
     (send-all! game-id (html (clue-view clue)))))
