@@ -85,10 +85,27 @@
     (insert-clue ds clue)
     (send-all! game-id (html (clue-view clue)))))
 
+(defn buzzed-in-view [game-id]
+  (let [player-id (get-in @game-states [game-id :buzzed-in])
+        message (if player-id
+                  (let [player (get-player ds {:game-id game-id, :id player-id})]
+                    (str (:name player) " buzzed in"))
+                  "No one is buzzed in")]
+    [:p#buzzed-in [:i message]]))
+
+(defn buzz-in [game-id player-id]
+  (swap! game-states
+         (fn [game-states]
+           (if (get-in game-states [game-id :buzzed-in])
+             game-states
+             (assoc-in game-states [game-id :buzzed-in] player-id))))
+  (send-all! game-id (html (buzzed-in-view game-id))))
+
 (defn receive-message [game-id player-id message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
     (case (keyword type)
-      :new-clue (new-clue game-id))))
+      :new-clue (new-clue game-id)
+      :buzz-in (buzz-in game-id player-id))))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
@@ -108,6 +125,10 @@
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (who-view game-id)
       (clue-view clue)
+      (buzzed-in-view game-id)
+      [:form {:ws-send ""}
+       [:input {:name :type, :value :buzz-in, :hidden ""}]
+       [:button "Buzz in"]]
       [:form {:ws-send ""}
        [:input {:name :type, :value :new-clue, :hidden ""}]
        [:button "New question"]]
