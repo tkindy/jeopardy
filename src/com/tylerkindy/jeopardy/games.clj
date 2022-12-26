@@ -64,9 +64,9 @@
   (swap! game-states update-in [game-id :players] dissoc player-id)
   (send-all! game-id (html (who-view game-id))))
 
-(defn render-clue [{:keys [category question]}]
+(defn render-clue [{:keys [category question value]}]
   (list
-   [:p [:i category]]
+   [:p [:i (str category ", $" value)]]
    [:p question]))
 
 (defn render-no-clue []
