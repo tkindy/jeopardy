@@ -43,7 +43,7 @@
                           (map :name)
                           sort)]
     [:div#who
-     [:p "Live players"]
+     [:p "Players"]
      [:ul
       (map (fn [name] [:li name]) player-names)]]))
 
