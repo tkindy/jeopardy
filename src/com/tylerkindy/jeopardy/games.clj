@@ -85,7 +85,7 @@
     (insert-clue ds clue)
     (send-all! game-id (html (clue-view clue)))))
 
-(defn receive-message [game-id player-id ch message]
+(defn receive-message [game-id player-id message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
     (case (keyword type)
       :new-question (new-clue game-id))))
@@ -97,7 +97,7 @@
       (as-channel req
                   {:on-open (fn [ch] (connect-player game-id player-id ch))
                    :on-close (fn [_ _] (disconnect-player game-id player-id))
-                   :on-receive (fn [ch message] (receive-message game-id player-id ch message))})
+                   :on-receive (fn [_ message] (receive-message game-id player-id message))})
       {:status 400
        :headers {"Content-Type" "text/html"}
        :body "<p>You're not logged in</p>"})))
