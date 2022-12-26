@@ -11,5 +11,6 @@
   (html5
    {:lang :en}
    [:head
+    [:title "Jeopardy"]
     [:meta {:name :viewport, :content "width=device-width, initial-scale-1"}]]
    body))
