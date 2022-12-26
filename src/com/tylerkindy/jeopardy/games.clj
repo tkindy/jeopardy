@@ -88,7 +88,7 @@
 (defn receive-message [game-id player-id message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
     (case (keyword type)
-      :new-question (new-clue game-id))))
+      :new-clue (new-clue game-id))))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
@@ -109,7 +109,7 @@
       (who-view game-id)
       (clue-view clue)
       [:form {:ws-send ""}
-       [:input {:name :type, :value :new-question, :hidden ""}]
+       [:input {:name :type, :value :new-clue, :hidden ""}]
        [:button "New question"]]
 
       scripts])))
