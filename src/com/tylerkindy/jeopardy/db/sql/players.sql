@@ -11,3 +11,8 @@ WHERE game_id = :game-id;
 SELECT * FROM players
 WHERE id = :id
 AND game_id = :game-id
+
+-- :name update-score :! :n
+UPDATE players
+SET score = :score
+WHERE id = :id;

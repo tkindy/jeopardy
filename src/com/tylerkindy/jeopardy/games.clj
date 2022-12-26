@@ -5,7 +5,7 @@
             [hiccup.core :refer [html]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
-            [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
+            [com.tylerkindy.jeopardy.db.players :refer [get-player list-players update-score]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]
             [org.httpkit.server :refer [as-channel send!]]
             [com.tylerkindy.jeopardy.common :refer [scripts page]]
@@ -117,11 +117,35 @@
              (fn [player-id]
                (html (buzzing-view game-id player-id)))))
 
+(defn endless-container [game-id player-id]
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    [:div#endless
+     (who-view game-id)
+     (clue-view clue)
+     (buzzing-view game-id player-id)
+     [:form {:ws-send ""}
+      [:input {:name :type, :value :new-clue, :hidden ""}]
+      [:button "New question"]]]))
+
+(defn right-answer [game-id player-id value]
+  (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
+    (update-score ds {:id player-id, :score (+ score value)})))
+
+(defn check-answer [game-id player-id {guess :answer}]
+  (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
+    (when (= answer guess)
+      (right-answer game-id player-id value)))
+  (swap! game-states assoc-in [game-id :buzzed-in] nil)
+  (send-all! game-id
+             (fn [player-id]
+               (html (endless-container game-id player-id)))))
+
 (defn receive-message [game-id player-id message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
     (case (keyword type)
       :new-clue (new-clue game-id)
-      :buzz-in (buzz-in game-id player-id))))
+      :buzz-in (buzz-in game-id player-id)
+      :answer (check-answer game-id player-id message))))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
@@ -136,16 +160,10 @@
        :body "<p>You're not logged in</p>"})))
 
 (defn endless-logged-in-page [{game-id :id} req]
-  (let [clue (get-current-clue ds {:game-id game-id})
-        player-id (get-in req [:session :id])]
+  (let [player-id (get-in req [:session :id])]
     (page
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
-      (who-view game-id)
-      (clue-view clue)
-      (buzzing-view game-id player-id)
-      [:form {:ws-send ""}
-       [:input {:name :type, :value :new-clue, :hidden ""}]
-       [:button "New question"]]
+      (endless-container game-id player-id)
 
       scripts])))
 
