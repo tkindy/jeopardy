@@ -119,7 +119,7 @@
    [:body
     [:form {:method :post
             :action (str "/games/" game-id "/players")}
-     [:label {:for "name"} "Username"]
+     [:label {:for "name"} "Set your username"]
      [:input {:id "name" :name "name" :type :text
               :minlength 1 :maxlength 24}]
      (anti-forgery-field)
