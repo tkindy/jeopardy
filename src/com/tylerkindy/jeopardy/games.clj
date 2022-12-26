@@ -45,7 +45,8 @@
     [:div#who
      [:p "Players"]
      [:ul
-      (map (fn [{:keys [name score]}] [:li (str name ": $" score)])
+      (map (fn [{:keys [name score]}]
+             [:li (format "%s: $%,d" name score)])
            players)]]))
 
 (defn send-all! [game-id message]
