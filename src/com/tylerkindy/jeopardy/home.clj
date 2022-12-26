@@ -1,10 +1,9 @@
 (ns com.tylerkindy.jeopardy.home
-  (:require [hiccup.page :refer [html5]]
+  (:require [com.tylerkindy.jeopardy.common :refer [page]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
 (defn home []
-  (html5
-   {:lang :en}
+  (page
    [:body
     [:h1 "Jeopardy"]
 

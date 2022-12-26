@@ -2,14 +2,13 @@
   (:require [compojure.core :refer [defroutes context POST GET]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
-            [hiccup.page :refer [html5]]
             [hiccup.core :refer [html]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]
             [org.httpkit.server :refer [as-channel send!]]
-            [com.tylerkindy.jeopardy.common :refer [scripts]]
+            [com.tylerkindy.jeopardy.common :refer [scripts page]]
             [cheshire.core :as json]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]))
 
@@ -82,8 +81,7 @@
 
 (defn endless-logged-in-page [{game-id :id} req]
   (let [clue (get-current-clue ds {:game-id game-id})]
-    (html5
-     {:lang :en}
+    (page
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (clue-view clue)
       [:form {:ws-send ""}
@@ -98,8 +96,7 @@
    :body (endless-logged-in-page game req)})
 
 (defn endless-anon-page [{game-id :id}]
-  (html5
-   {:lang :en}
+  (page
    [:body
     [:form {:method :post
             :action (str "/games/" game-id "/players")}
