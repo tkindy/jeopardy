@@ -38,15 +38,15 @@
                             keys
                             set)
                        #{})
-        player-names (->> (list-players ds {:game-id game-id})
-                          (filter (fn [{:keys [id]}] (player-ids id)))
-                          (sort-by :score)
-                          reverse)]
+        players (->> (list-players ds {:game-id game-id})
+                     (filter (fn [{:keys [id]}] (player-ids id)))
+                     (sort-by :score)
+                     reverse)]
     [:div#who
      [:p "Players"]
      [:ul
       (map (fn [{:keys [name score]}] [:li (str name ": $" score)])
-           player-names)]]))
+           players)]]))
 
 (defn send-all! [game-id message]
   (let [channels (-> (get-in @game-states [game-id :players])
