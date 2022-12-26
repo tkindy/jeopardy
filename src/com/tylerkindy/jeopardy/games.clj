@@ -50,10 +50,11 @@
            players)]]))
 
 (defn send-all! [game-id message]
-  (let [channels (-> (get-in @game-states [game-id :players])
-                     vals)]
-    (doseq [channel channels]
-      (send! channel message))))
+  (let [players (-> (get-in @game-states [game-id :players]))]
+    (doseq [[player-id channel] players]
+      (if (fn? message)
+        (send! channel (message player-id))
+        (send! channel message)))))
 
 (defn connect-player [game-id player-id ch]
   (swap! game-states assoc-in [game-id :players player-id] ch)
@@ -85,13 +86,26 @@
     (insert-clue ds clue)
     (send-all! game-id (html (clue-view clue)))))
 
-(defn buzzed-in-view [game-id]
-  (let [player-id (get-in @game-states [game-id :buzzed-in])
-        message (if player-id
-                  (let [player (get-player ds {:game-id game-id, :id player-id})]
-                    (str (:name player) " buzzed in"))
+(defn buzzing-form [game-id player-id]
+  (let [buzzed-in-id (get-in @game-states [game-id :buzzed-in])
+        [type button-text] (if (= buzzed-in-id player-id)
+                             [:answer "Submit"]
+                             [:buzz-in "Buzz in"])]
+    [:form {:ws-send ""}
+     [:input {:name :type, :value type, :hidden ""}]
+     (when (= type :answer)
+       [:input {:type :text, :name :answer}])
+     [:button button-text]]))
+
+(defn buzzing-view [game-id player-id]
+  (let [buzzed-in-id (get-in @game-states [game-id :buzzed-in])
+        buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
+        message (if buzzed-in-player
+                  (str (:name buzzed-in-player) " buzzed in")
                   "No one is buzzed in")]
-    [:p#buzzed-in [:i message]]))
+    [:div#buzzing
+     [:p [:i message]]
+     (buzzing-form game-id player-id)]))
 
 (defn buzz-in [game-id player-id]
   (swap! game-states
@@ -99,7 +113,9 @@
            (if (get-in game-states [game-id :buzzed-in])
              game-states
              (assoc-in game-states [game-id :buzzed-in] player-id))))
-  (send-all! game-id (html (buzzed-in-view game-id))))
+  (send-all! game-id
+             (fn [player-id]
+               (html (buzzing-view game-id player-id)))))
 
 (defn receive-message [game-id player-id message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
@@ -120,15 +136,13 @@
        :body "<p>You're not logged in</p>"})))
 
 (defn endless-logged-in-page [{game-id :id} req]
-  (let [clue (get-current-clue ds {:game-id game-id})]
+  (let [clue (get-current-clue ds {:game-id game-id})
+        player-id (get-in req [:session :id])]
     (page
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (who-view game-id)
       (clue-view clue)
-      (buzzed-in-view game-id)
-      [:form {:ws-send ""}
-       [:input {:name :type, :value :buzz-in, :hidden ""}]
-       [:button "Buzz in"]]
+      (buzzing-view game-id player-id)
       [:form {:ws-send ""}
        [:input {:name :type, :value :new-clue, :hidden ""}]
        [:button "New question"]]
