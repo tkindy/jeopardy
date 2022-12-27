@@ -131,7 +131,7 @@
      [:input {:name :type, :value type, :hidden ""}]
      (when (= type :answer)
        [:input {:type :text, :name :answer, :autofocus ""}])
-     [:button button-text]]))
+     [:button {:style "width: 100%; height: 100px;"} button-text]]))
 
 (defn buzzing-view [game-id player-id]
   (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
