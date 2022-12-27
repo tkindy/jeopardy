@@ -104,7 +104,7 @@
 
 (defn new-clue [game-id]
   (when (transition! game-id
-                     (fn [{:keys [name]}] (= name :idle))
+                     (fn [{:keys [name]}] (#{:idle :open-for-answers} name))
                      {:name :drawing-clue})
     (let [clue (-> (random-clue)
                    (select-keys [:category :question :answer :value])
