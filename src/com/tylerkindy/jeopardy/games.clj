@@ -70,14 +70,15 @@
     {:name :open-for-answers}
     {:name :idle}))
 
+(defn build-game [game-id]
+  {:state (derive-state game-id)})
+
 (defn setup-game-state! [game-id]
   (swap! live-games
          (fn [live-games]
-           (if (get-in live-games [game-id :state])
+           (if (get live-games game-id)
              live-games
-             (assoc-in live-games
-                       [game-id :state]
-                       (derive-state game-id))))))
+             (assoc live-games game-id (build-game game-id))))))
 
 (defn connect-player [game-id player-id ch]
   (setup-game-state! game-id)
