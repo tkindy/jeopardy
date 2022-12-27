@@ -161,6 +161,9 @@
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
     (update-score ds {:id player-id, :score (+ score value)}))
+  (send-all! game-id
+             (fn [player-id]
+               (html (endless-container game-id player-id))))
   (new-clue! game-id))
 
 (defn wrong-answer [game-id]
