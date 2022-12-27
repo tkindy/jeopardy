@@ -59,7 +59,7 @@
            players)]]))
 
 (defn send-all! [game-id message]
-  (let [players (-> (get-in @live-games [game-id :players]))]
+  (let [players (get-in @live-games [game-id :players])]
     (doseq [[player-id channel] players]
       (if (fn? message)
         (send! channel (message player-id))
