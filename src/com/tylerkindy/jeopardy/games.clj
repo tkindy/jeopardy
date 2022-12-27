@@ -121,17 +121,24 @@
   (let [live-game (get @live-games game-id)
         state (get-in live-game [:state :name])
         buzzed-in-id (get-in live-game [:state :buzzed-in])
-        [type button-text attrs]
+        [type button-text form-attrs button-attrs]
         (match [state buzzed-in-id]
-          [:answering player-id] [:answer "Submit" nil]
-          :else                  [:buzz-in
-                                  "Buzz in (spacebar)"
-                                  {:hx-trigger "click, keyup[key==' '] from:body"}])]
-    [:form (merge {:ws-send ""} attrs)
+          [:answering player-id] [:answer "Submit" nil nil]
+          [:answering _] [:buzz-in
+                          "Buzz in (spacebar)"
+                          {:hx-trigger "click, keyup[key==' '] from:body"}
+                          {:disabled ""}]
+          :else           [:buzz-in
+                           "Buzz in (spacebar)"
+                           {:hx-trigger "click, keyup[key==' '] from:body"}
+                           nil])]
+    [:form (merge {:ws-send ""} form-attrs)
      [:input {:name :type, :value type, :hidden ""}]
      (when (= type :answer)
        [:input {:type :text, :name :answer, :autofocus "", :autocomplete :off}])
-     [:button {:style "width: 100%; height: 100px;"} button-text]]))
+     [:button (merge {:style "width: 100%; height: 100px;"}
+                     button-attrs)
+      button-text]]))
 
 (defn buzzing-view [game-id player-id]
   (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
