@@ -132,13 +132,15 @@
     (update-score ds {:id player-id, :score (+ score value)})))
 
 (defn check-answer [game-id player-id {guess :answer}]
-  (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
-    (when (= answer guess)
-      (right-answer game-id player-id value)))
-  (swap! game-states assoc-in [game-id :buzzed-in] nil)
-  (send-all! game-id
-             (fn [player-id]
-               (html (endless-container game-id player-id)))))
+  (let [buzzed-in-id (get-in @game-states [game-id :buzzed-in])]
+    (when (= buzzed-in-id player-id)
+      (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
+        (when (= answer guess)
+          (right-answer game-id player-id value)))
+      (swap! game-states assoc-in [game-id :buzzed-in] nil)
+      (send-all! game-id
+                 (fn [player-id]
+                   (html (endless-container game-id player-id)))))))
 
 (defn receive-message [game-id player-id message]
   (let [{:keys [type] :as message} (json/parse-string message keyword)]
