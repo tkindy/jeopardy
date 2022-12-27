@@ -10,7 +10,8 @@
             [org.httpkit.server :refer [as-channel send!]]
             [com.tylerkindy.jeopardy.common :refer [scripts page]]
             [cheshire.core :as json]
-            [com.tylerkindy.jeopardy.jservice :refer [random-clue]]))
+            [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
+            [clojure.core.match :refer [match]]))
 
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
@@ -86,10 +87,12 @@
     (send-all! game-id (html (clue-view clue)))))
 
 (defn buzzing-form [game-id player-id]
-  (let [buzzed-in-id (get-in @live-games [game-id :buzzed-in])
-        [type button-text] (if (= buzzed-in-id player-id)
-                             [:answer "Submit"]
-                             [:buzz-in "Buzz in"])]
+  (let [live-game (get @live-games game-id)
+        state (get-in live-game [:state :name])
+        buzzed-in-id (get-in live-game [:state :buzzed-in])
+        [type button-text] (match [state buzzed-in-id]
+                             [:answering player-id] [:answer "Submit"]
+                             :else                  [:buzz-in "Buzz in"])]
     [:form {:ws-send ""}
      [:input {:name :type, :value type, :hidden ""}]
      (when (= type :answer)
@@ -97,7 +100,7 @@
      [:button button-text]]))
 
 (defn buzzing-view [game-id player-id]
-  (let [buzzed-in-id (get-in @live-games [game-id :buzzed-in])
+  (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
         buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
         message (if buzzed-in-player
                   (str (:name buzzed-in-player) " buzzed in")
@@ -109,9 +112,10 @@
 (defn buzz-in [game-id player-id]
   (swap! live-games
          (fn [live-games]
-           (if (get-in live-games [game-id :buzzed-in])
+           (if (get-in live-games [game-id :state :buzzed-in])
              live-games
-             (assoc-in live-games [game-id :buzzed-in] player-id))))
+             (assoc-in live-games [game-id :state] {:name :answering
+                                                    :buzzed-in player-id}))))
   (send-all! game-id
              (fn [player-id]
                (html (buzzing-view game-id player-id)))))
@@ -131,12 +135,12 @@
     (update-score ds {:id player-id, :score (+ score value)})))
 
 (defn check-answer [game-id player-id {guess :answer}]
-  (let [buzzed-in-id (get-in @live-games [game-id :buzzed-in])]
+  (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])]
     (when (= buzzed-in-id player-id)
       (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
         (when (= answer guess)
           (right-answer game-id player-id value)))
-      (swap! live-games assoc-in [game-id :buzzed-in] nil)
+      (swap! live-games assoc-in [game-id :state :buzzed-in] nil)
       (send-all! game-id
                  (fn [player-id]
                    (html (endless-container game-id player-id)))))))
