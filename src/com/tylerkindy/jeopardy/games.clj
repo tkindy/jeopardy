@@ -12,7 +12,6 @@
             [cheshire.core :as json]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]))
 
-
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
        (map char)))
