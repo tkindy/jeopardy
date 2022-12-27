@@ -93,7 +93,7 @@
     [:form {:ws-send ""}
      [:input {:name :type, :value type, :hidden ""}]
      (when (= type :answer)
-       [:input {:type :text, :name :answer}])
+       [:input {:type :text, :name :answer, :autofocus ""}])
      [:button button-text]]))
 
 (defn buzzing-view [game-id player-id]
