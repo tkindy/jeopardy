@@ -102,17 +102,20 @@
      (render-clue clue)
      (render-no-clue))])
 
-(defn new-clue [game-id]
+(defn new-clue! [game-id]
+  (let [clue (-> (random-clue)
+                 (select-keys [:category :question :answer :value])
+                 (update :category :title)
+                 (assoc :game-id game-id))]
+    (insert-clue ds clue)
+    (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
+    (send-all! game-id (html (clue-view clue)))))
+
+(defn request-new-clue [game-id]
   (when (transition! game-id
                      (fn [{:keys [name]}] (#{:idle :open-for-answers} name))
                      {:name :drawing-clue})
-    (let [clue (-> (random-clue)
-                   (select-keys [:category :question :answer :value])
-                   (update :category :title)
-                   (assoc :game-id game-id))]
-      (insert-clue ds clue)
-      (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
-      (send-all! game-id (html (clue-view clue))))))
+    (new-clue! game-id)))
 
 (defn buzzing-form [game-id player-id]
   (let [live-game (get @live-games game-id)
@@ -157,23 +160,30 @@
 
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
-    (update-score ds {:id player-id, :score (+ score value)})))
+    (update-score ds {:id player-id, :score (+ score value)}))
+  (new-clue! game-id))
+
+(defn wrong-answer [game-id]
+  (swap! live-games assoc-in [game-id :state] {:name :open-for-answers}))
 
 (defn check-answer [game-id player-id {guess :answer}]
-  (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])]
-    (when (= buzzed-in-id player-id)
-      (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
-        (when (= answer guess)
-          (right-answer game-id player-id value)))
-      (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
-      (send-all! game-id
-                 (fn [player-id]
-                   (html (endless-container game-id player-id)))))))
+  (when (transition! game-id
+                     (fn [{:keys [name buzzed-in]}]
+                       (and (= name :answering)
+                            (= player-id buzzed-in)))
+                     {:name :checking-answer})
+    (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
+      (if (= answer guess)
+        (right-answer game-id player-id value)
+        (wrong-answer game-id)))
+    (send-all! game-id
+               (fn [player-id]
+                 (html (endless-container game-id player-id))))))
 
 (defn receive-message [game-id player-id message]
   (let [message (json/parse-string message keyword)]
     (case (keyword (:type message))
-      :new-clue (new-clue game-id)
+      :new-clue (request-new-clue game-id)
       :buzz-in  (buzz-in game-id player-id)
       :answer   (check-answer game-id player-id message))))
 
