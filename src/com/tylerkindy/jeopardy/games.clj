@@ -85,7 +85,12 @@
   (send-all! game-id (html (who-view game-id))))
 
 (defn disconnect-player [game-id player-id]
-  (swap! live-games update-in [game-id :players] dissoc player-id)
+  (swap! live-games
+         (fn [live-games]
+           (let [live-games (update-in live-games [game-id :players] dissoc player-id)]
+             (if (empty? (get-in live-games [game-id :players]))
+               (dissoc live-games game-id)
+               live-games))))
   (send-all! game-id (html (who-view game-id))))
 
 (defn render-clue [{:keys [category question value]}]
