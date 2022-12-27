@@ -186,6 +186,8 @@
                             (= player-id buzzed-in)))
                      {:name :checking-answer})
     (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
+      ; TODO: implement edit distance
+      ; TODO: strip HTML (I've seen <a>, <i>)
       (if (= answer guess)
         (right-answer game-id player-id value)
         (wrong-answer game-id)))
