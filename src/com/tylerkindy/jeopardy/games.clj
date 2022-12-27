@@ -33,6 +33,15 @@
 
 (defonce live-games (atom {}))
 
+(defn transition! [game-id from-pred to-state]
+  (let [new-val (swap! live-games
+                       (fn [live-games]
+                         (if (from-pred (get-in live-games [game-id :state]))
+                           (assoc-in live-games [game-id :state] to-state)
+                           live-games)))]
+    (= (get-in new-val [game-id :state])
+       to-state)))
+
 (defn who-view [game-id]
   (let [player-ids (or (->> (get-in @live-games [game-id :players])
                             keys
@@ -56,7 +65,22 @@
         (send! channel (message player-id))
         (send! channel message)))))
 
+(defn derive-state [game-id]
+  (if (get-current-clue ds {:game-id game-id})
+    {:name :open-for-answers}
+    {:name :idle}))
+
+(defn setup-game-state! [game-id]
+  (swap! live-games
+         (fn [live-games]
+           (if (get-in live-games [game-id :state])
+             live-games
+             (assoc-in live-games
+                       [game-id :state]
+                       (derive-state game-id))))))
+
 (defn connect-player [game-id player-id ch]
+  (setup-game-state! game-id)
   (swap! live-games assoc-in [game-id :players player-id] ch)
   (send-all! game-id (html (who-view game-id))))
 
@@ -79,13 +103,16 @@
      (render-no-clue))])
 
 (defn new-clue [game-id]
-  (let [clue (-> (random-clue)
-                 (select-keys [:category :question :answer :value])
-                 (update :category :title)
-                 (assoc :game-id game-id))]
-    (insert-clue ds clue)
-    (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
-    (send-all! game-id (html (clue-view clue)))))
+  (when (transition! game-id
+                     (fn [{:keys [name]}] (= name :idle))
+                     {:name :drawing-clue})
+    (let [clue (-> (random-clue)
+                   (select-keys [:category :question :answer :value])
+                   (update :category :title)
+                   (assoc :game-id game-id))]
+      (insert-clue ds clue)
+      (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
+      (send-all! game-id (html (clue-view clue))))))
 
 (defn buzzing-form [game-id player-id]
   (let [live-game (get @live-games game-id)
@@ -111,18 +138,12 @@
      (buzzing-form game-id player-id)]))
 
 (defn buzz-in [game-id player-id]
-  (swap! live-games
-         (fn [live-games]
-           (let [state (get-in live-games [game-id :state])]
-             (match [(:name state) (:buzzed-in state)]
-               [:open-for-answers nil] (assoc-in live-games
-                                                 [game-id :state]
-                                                 {:name :answering
-                                                  :buzzed-in player-id})
-               :else live-games))))
-  (send-all! game-id
-             (fn [player-id]
-               (html (buzzing-view game-id player-id)))))
+  (when (transition! game-id
+                     (fn [{:keys [name]}] (= name :open-for-answers))
+                     {:name :answering, :buzzed-in player-id})
+    (send-all! game-id
+               (fn [player-id]
+                 (html (buzzing-view game-id player-id))))))
 
 (defn endless-container [game-id player-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
@@ -150,11 +171,12 @@
                    (html (endless-container game-id player-id)))))))
 
 (defn receive-message [game-id player-id message]
-  (let [{:keys [type] :as message} (json/parse-string message keyword)]
-    (case (keyword type)
-      :new-clue (new-clue game-id)
-      :buzz-in (buzz-in game-id player-id)
-      :answer (check-answer game-id player-id message))))
+  (let [message (json/parse-string message keyword)
+        state (get-in @live-games [game-id :state])]
+    (match [(:name state) (keyword (:type message))]
+      [:idle             :new-clue] (new-clue game-id)
+      [:open-for-answers :buzz-in]  (buzz-in game-id player-id)
+      [:answering        :answer]   (check-answer game-id player-id message))))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
