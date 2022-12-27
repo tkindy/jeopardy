@@ -84,6 +84,7 @@
                  (update :category :title)
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
+    (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
     (send-all! game-id (html (clue-view clue)))))
 
 (defn buzzing-form [game-id player-id]
@@ -112,10 +113,13 @@
 (defn buzz-in [game-id player-id]
   (swap! live-games
          (fn [live-games]
-           (if (get-in live-games [game-id :state :buzzed-in])
-             live-games
-             (assoc-in live-games [game-id :state] {:name :answering
-                                                    :buzzed-in player-id}))))
+           (let [state (get-in live-games [game-id :state])]
+             (match [(:name state) (:buzzed-in state)]
+               [:open-for-answers nil] (assoc-in live-games
+                                                 [game-id :state]
+                                                 {:name :answering
+                                                  :buzzed-in player-id})
+               :else live-games))))
   (send-all! game-id
              (fn [player-id]
                (html (buzzing-view game-id player-id)))))
@@ -140,7 +144,7 @@
       (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
         (when (= answer guess)
           (right-answer game-id player-id value)))
-      (swap! live-games assoc-in [game-id :state :buzzed-in] nil)
+      (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
       (send-all! game-id
                  (fn [player-id]
                    (html (endless-container game-id player-id)))))))
