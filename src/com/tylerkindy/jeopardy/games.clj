@@ -171,12 +171,11 @@
                    (html (endless-container game-id player-id)))))))
 
 (defn receive-message [game-id player-id message]
-  (let [message (json/parse-string message keyword)
-        state (get-in @live-games [game-id :state])]
-    (match [(:name state) (keyword (:type message))]
-      [:idle             :new-clue] (new-clue game-id)
-      [:open-for-answers :buzz-in]  (buzz-in game-id player-id)
-      [:answering        :answer]   (check-answer game-id player-id message))))
+  (let [message (json/parse-string message keyword)]
+    (case (keyword (:type message))
+      :new-clue (new-clue game-id)
+      :buzz-in  (buzz-in game-id player-id)
+      :answer   (check-answer game-id player-id message))))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
