@@ -30,10 +30,10 @@
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
 
-(defonce game-states (atom {}))
+(defonce live-games (atom {}))
 
 (defn who-view [game-id]
-  (let [player-ids (or (->> (get-in @game-states [game-id :players])
+  (let [player-ids (or (->> (get-in @live-games [game-id :players])
                             keys
                             set)
                        #{})
@@ -49,18 +49,18 @@
            players)]]))
 
 (defn send-all! [game-id message]
-  (let [players (-> (get-in @game-states [game-id :players]))]
+  (let [players (-> (get-in @live-games [game-id :players]))]
     (doseq [[player-id channel] players]
       (if (fn? message)
         (send! channel (message player-id))
         (send! channel message)))))
 
 (defn connect-player [game-id player-id ch]
-  (swap! game-states assoc-in [game-id :players player-id] ch)
+  (swap! live-games assoc-in [game-id :players player-id] ch)
   (send-all! game-id (html (who-view game-id))))
 
 (defn disconnect-player [game-id player-id]
-  (swap! game-states update-in [game-id :players] dissoc player-id)
+  (swap! live-games update-in [game-id :players] dissoc player-id)
   (send-all! game-id (html (who-view game-id))))
 
 (defn render-clue [{:keys [category question value]}]
@@ -86,7 +86,7 @@
     (send-all! game-id (html (clue-view clue)))))
 
 (defn buzzing-form [game-id player-id]
-  (let [buzzed-in-id (get-in @game-states [game-id :buzzed-in])
+  (let [buzzed-in-id (get-in @live-games [game-id :buzzed-in])
         [type button-text] (if (= buzzed-in-id player-id)
                              [:answer "Submit"]
                              [:buzz-in "Buzz in"])]
@@ -97,7 +97,7 @@
      [:button button-text]]))
 
 (defn buzzing-view [game-id player-id]
-  (let [buzzed-in-id (get-in @game-states [game-id :buzzed-in])
+  (let [buzzed-in-id (get-in @live-games [game-id :buzzed-in])
         buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
         message (if buzzed-in-player
                   (str (:name buzzed-in-player) " buzzed in")
@@ -107,11 +107,11 @@
      (buzzing-form game-id player-id)]))
 
 (defn buzz-in [game-id player-id]
-  (swap! game-states
-         (fn [game-states]
-           (if (get-in game-states [game-id :buzzed-in])
-             game-states
-             (assoc-in game-states [game-id :buzzed-in] player-id))))
+  (swap! live-games
+         (fn [live-games]
+           (if (get-in live-games [game-id :buzzed-in])
+             live-games
+             (assoc-in live-games [game-id :buzzed-in] player-id))))
   (send-all! game-id
              (fn [player-id]
                (html (buzzing-view game-id player-id)))))
@@ -131,12 +131,12 @@
     (update-score ds {:id player-id, :score (+ score value)})))
 
 (defn check-answer [game-id player-id {guess :answer}]
-  (let [buzzed-in-id (get-in @game-states [game-id :buzzed-in])]
+  (let [buzzed-in-id (get-in @live-games [game-id :buzzed-in])]
     (when (= buzzed-in-id player-id)
       (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
         (when (= answer guess)
           (right-answer game-id player-id value)))
-      (swap! game-states assoc-in [game-id :buzzed-in] nil)
+      (swap! live-games assoc-in [game-id :buzzed-in] nil)
       (send-all! game-id
                  (fn [player-id]
                    (html (endless-container game-id player-id)))))))
