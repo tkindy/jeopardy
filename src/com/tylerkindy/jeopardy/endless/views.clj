@@ -2,7 +2,13 @@
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
-            [com.tylerkindy.jeopardy.endless.live :refer [live-games]]))
+            [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
+  (:import [java.text NumberFormat]))
+
+(def score-format (doto (NumberFormat/getCurrencyInstance)
+                    (.setMaximumFractionDigits 0)))
+(defn format-score [score]
+  (.format score-format score))
 
 (defn who-view [game-id]
   (let [player-ids (or (->> (get-in @live-games [game-id :players])
@@ -16,7 +22,7 @@
     [:div#who
      [:ul
       (map (fn [{:keys [name score]}]
-             [:li (format "%s: $%,d" name score)])
+             [:li (format "%s: %s" name (format-score score))])
            players)]]))
 
 (defn render-clue [{:keys [category question value]}]
