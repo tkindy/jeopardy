@@ -7,6 +7,7 @@
   (let [question (str/lower-case question)]
     (and value
          (not (str/includes? question "seen here"))
+         (not (str/includes? question "shown here"))
          (not (str/includes? question "heard here")))))
 
 (defn valid-answer? [{:keys [answer]}]
