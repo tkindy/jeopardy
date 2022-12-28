@@ -24,4 +24,5 @@
   (-> answer
       strip-html
       transliterate
-      strip-symbols))
+      strip-symbols
+      str/lower-case))
