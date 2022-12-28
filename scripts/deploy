@@ -10,4 +10,7 @@ scp "target/$artifact" jeopardy:~
 
 ssh jeopardy "bash -s" < scripts/exec-deploy.sh
 
-./scripts/cleanup
+if test $status -eq 0
+  echo "Cleaning up old jars"
+  ./scripts/cleanup
+end
