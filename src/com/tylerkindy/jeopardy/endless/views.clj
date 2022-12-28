@@ -36,20 +36,24 @@
      (render-no-clue))])
 
 (defn buzzing-form [game-id player-id]
-  (let [live-game (get @live-games game-id)
-        state (get-in live-game [:state :name])
-        buzzed-in-id (get-in live-game [:state :buzzed-in])
-        [type button-text form-attrs button-attrs]
-        (match [state buzzed-in-id]
-          [:answering player-id] [:answer "Submit" nil nil]
-          [:answering _] [:buzz-in
-                          "Buzz in (spacebar)"
-                          {:hx-trigger "click, keyup[key==' '] from:body"}
-                          {:disabled ""}]
-          :else           [:buzz-in
-                           "Buzz in (spacebar)"
-                           {:hx-trigger "click, keyup[key==' '] from:body"}
-                           nil])]
+  (let [{state :name
+         buzzed-in-id :buzzed-in
+         attempted :attempted}
+        (get-in @live-games [game-id :state])
+
+        [type button-text] (if (and (= state :answering)
+                                    (= buzzed-in-id player-id))
+                             [:answer "Submit"]
+                             [:buzz-in "Buzz in (spacebar)"])
+        form-attrs (if (= type :buzz-in)
+                     {:hx-trigger "click, keyup[key==' '] from:body"}
+                     nil)
+        button-attrs (if (or (and (= state :answering)
+                                  (not= buzzed-in-id player-id))
+                             (and (= state :open-for-answers)
+                                  (attempted player-id)))
+                       {:disabled ""}
+                       nil)]
     [:form (merge {:ws-send ""} form-attrs)
      [:input {:name :type, :value type, :hidden ""}]
      (when (= type :answer)
