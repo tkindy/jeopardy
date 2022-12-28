@@ -1,5 +1,3 @@
-#!/bin/sh
-
 latest () {
   ls | grep "$1.*\.jar" | sort -V -r | head -n 1
 }

@@ -8,4 +8,4 @@ set artifact (ls target | grep "jeopardy.*\.jar")
 echo "Uploading $artifact to server"
 scp "target/$artifact" jeopardy:~
 
-ssh jeopardy ./deploy
+ssh jeopardy "bash -s" < scripts/server/deploy.sh
