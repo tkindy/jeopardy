@@ -33,7 +33,8 @@
 
 (defn derive-state [game-id]
   (if (get-current-clue ds {:game-id game-id})
-    {:name :open-for-answers}
+    {:name :open-for-answers
+     :attempted #{}}
     {:name :idle}))
 
 (defn build-game [game-id]

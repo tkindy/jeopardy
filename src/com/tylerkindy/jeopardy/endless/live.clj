@@ -4,13 +4,14 @@
 (defonce live-games (atom {}))
 
 (defn transition! [game-id from-pred to-state]
-  (let [new-val (swap! live-games
-                       (fn [live-games]
-                         (if (from-pred (get-in live-games [game-id :state]))
-                           (assoc-in live-games [game-id :state] to-state)
-                           live-games)))]
-    (= (get-in new-val [game-id :state])
-       to-state)))
+  (let [[old new] (swap-vals! live-games
+                              (fn [live-games]
+                                (if (from-pred (get-in live-games [game-id :state]))
+                                  (if (fn? to-state)
+                                    (update-in live-games [game-id :state] to-state)
+                                    (assoc-in live-games [game-id :state] to-state))
+                                  live-games)))]
+    (not= old new)))
 
 (defn send-all! [game-id message]
   (let [players (get-in @live-games [game-id :players])]
