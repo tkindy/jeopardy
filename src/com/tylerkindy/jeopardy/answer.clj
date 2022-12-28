@@ -46,3 +46,14 @@
 
 (defn similar? [l r]
   (>= (similarity l r) 0.75))
+
+(defn accepted-answers [answer]
+  (->> [answer
+        (str/replace answer #"\(.*?\)" "")
+        (str/split answer #"\s+or\s+|/")]
+       flatten
+       set))
+
+(defn correct? [answer guess]
+  (some #(similar? % guess)
+        (accepted-answers answer)))
