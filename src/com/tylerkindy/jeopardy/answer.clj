@@ -16,8 +16,12 @@
       (str/replace #"(\p{Lu}|\p{Ll}|\p{Lt}|\p{Lm}|\p{Lo})(?:\p{Mn}|\p{Mc}|\p{Me})+"
                    (fn [[_ letter]] letter))))
 
+(defn strip-symbols [answer]
+  (str/replace answer #"[\"'\\]" ""))
+
 ; TODO: implement edit distance
 (defn normalize-answer [answer]
   (-> answer
       strip-html
-      transliterate))
+      transliterate
+      strip-symbols))
