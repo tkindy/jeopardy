@@ -8,9 +8,11 @@
          (not (str/includes? question "seen here"))
          (not (str/includes? question "heard here")))))
 
-(defn random-clue []
-  (->> (http/get "https://jservice.io/api/random?count=10"
+(defn random-clues [n]
+  (->> (http/get (str "https://jservice.io/api/random?count=" n)
                  {:accept :json, :as :json})
        :body
-       (filter valid-clue?)
-       first))
+       (filter valid-clue?)))
+
+(defn random-clue []
+  (first (random-clues 10)))
