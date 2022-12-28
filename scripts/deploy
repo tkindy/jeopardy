@@ -9,3 +9,5 @@ echo "Uploading $artifact to server"
 scp "target/$artifact" jeopardy:~
 
 ssh jeopardy "bash -s" < scripts/exec-deploy.sh
+
+./scripts/cleanup
