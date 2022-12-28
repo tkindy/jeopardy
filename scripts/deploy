@@ -1,5 +1,8 @@
 #!/usr/bin/env fish
 
+echo "Building"
+clj -T:build uber
+
 set artifact (ls target | grep "jeopardy.*\.jar")
 
 echo "Uploading $artifact to server"
