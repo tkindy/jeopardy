@@ -20,12 +20,16 @@
 (defn strip-symbols [answer]
   (str/replace answer #"[\"'\\]" ""))
 
+(defn convert-entities [answer]
+  (str/replace answer #"&amp;|&" "and"))
+
 (defn normalize-answer [answer]
   (-> answer
       strip-html
       transliterate
       strip-symbols
-      str/lower-case))
+      str/lower-case
+      convert-entities))
 
 ; White Similarity algorithm
 ; http://www.catalysoft.com/articles/StrikeAMatch.html
