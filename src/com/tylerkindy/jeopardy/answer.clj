@@ -1,5 +1,6 @@
 (ns com.tylerkindy.jeopardy.answer
-  (:require [clojure.string :as str])
+  (:require [clojure.set :as set]
+            [clojure.string :as str])
   (:import [java.text Normalizer Normalizer$Form]
            [org.jsoup Jsoup]
            [org.jsoup.safety Safelist]))
@@ -19,10 +20,25 @@
 (defn strip-symbols [answer]
   (str/replace answer #"[\"'\\]" ""))
 
-; TODO: implement edit distance
 (defn normalize-answer [answer]
   (-> answer
       strip-html
       transliterate
       strip-symbols
       str/lower-case))
+
+; White Similarity algorithm
+; http://www.catalysoft.com/articles/StrikeAMatch.html
+(defn char-pairs [s]
+  (->> (str/split s #"\s+")
+       (mapcat #(partition 2 1 %))
+       set))
+
+(defn similarity [s1 s2]
+  (let [s1-pairs (char-pairs s1)
+        s2-pairs (char-pairs s2)]
+    (/ (* 2 (count (set/intersection s1-pairs s2-pairs)))
+       (+ (count s1-pairs) (count s2-pairs)))))
+
+(defn similar? [l r]
+  (>= (similarity l r) 0.5))
