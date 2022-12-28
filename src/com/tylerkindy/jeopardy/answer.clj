@@ -5,6 +5,8 @@
            [org.jsoup Jsoup]
            [org.jsoup.safety Safelist]))
 
+; Lots of ideas here from https://github.com/gesteves/trebekbot
+
 (defn strip-html [answer]
   (Jsoup/clean answer (Safelist/none)))
 
