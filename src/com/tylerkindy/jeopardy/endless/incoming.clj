@@ -5,7 +5,7 @@
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [buzzing-view clue-view endless-container]]
+            [com.tylerkindy.jeopardy.endless.views :refer [buzzing-view endless-container]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [hiccup.core :refer [html]]))
 
@@ -17,7 +17,9 @@
     (insert-clue ds clue)
     (swap! live-games assoc-in [game-id :state] {:name :open-for-answers
                                                  :attempted #{}})
-    (send-all! game-id (html (clue-view clue)))))
+    (send-all! game-id
+               (fn [player-id]
+                 (html (endless-container game-id player-id))))))
 
 (defn request-new-clue [game-id]
   (when (transition! game-id
