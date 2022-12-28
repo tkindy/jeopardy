@@ -1,5 +1,6 @@
 (ns com.tylerkindy.jeopardy.endless.incoming
   (:require [cheshire.core :as json]
+            [com.tylerkindy.jeopardy.answer :refer [normalize-answer]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
@@ -49,9 +50,7 @@
                             (= player-id buzzed-in)))
                      {:name :checking-answer})
     (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
-      ; TODO: implement edit distance
-      ; TODO: strip HTML (I've seen <a>, <i>)
-      (if (= answer guess)
+      (if (= answer (normalize-answer guess))
         (right-answer game-id player-id value)
         (wrong-answer game-id)))
     (send-all! game-id

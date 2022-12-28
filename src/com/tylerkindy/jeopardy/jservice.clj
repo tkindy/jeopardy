@@ -1,6 +1,7 @@
 (ns com.tylerkindy.jeopardy.jservice
   (:require [clj-http.client :as http]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [com.tylerkindy.jeopardy.answer :refer [normalize-answer]]))
 
 (defn valid-clue? [{:keys [question value]}]
   (let [question (str/lower-case question)]
@@ -12,7 +13,8 @@
   (->> (http/get (str "https://jservice.io/api/random?count=" n)
                  {:accept :json, :as :json})
        :body
-       (filter valid-clue?)))
+       (filter valid-clue?)
+       (map (fn [clue] (update clue :answer normalize-answer)))))
 
 (defn random-clue []
   (first (random-clues 10)))
