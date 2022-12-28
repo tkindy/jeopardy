@@ -16,6 +16,7 @@ jobs:
       uses: actions/setup-java@v3.9.0
       with:
         java-version: "19"
+        distribution: adopt
     - name: Setup Clojure
       uses: DeLaGuardo/setup-clojure@05cb4bfdf57855f122e75b71e45224775cdfc4a0
       with:
