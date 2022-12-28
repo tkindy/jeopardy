@@ -15,7 +15,6 @@
   org.postgresql/postgresql {:mvn/version "42.5.1"}
   io.github.yogthos/migratus {:git/tag "v1.4.6", :git/sha "ba7f949"}
   org.slf4j/slf4j-reload4j {:mvn/version "2.0.6"}
-  org.clojure/core.match {:mvn/version "1.0.1"}
   org.jsoup/jsoup {:mvn/version "1.15.3"}}
 
  :aliases

@@ -1,6 +1,5 @@
 (ns com.tylerkindy.jeopardy.endless.views
-  (:require [clojure.core.match :refer [match]]
-            [com.tylerkindy.jeopardy.db.core :refer [ds]]
+  (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]]))
