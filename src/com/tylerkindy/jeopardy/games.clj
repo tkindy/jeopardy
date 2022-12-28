@@ -5,13 +5,13 @@
             [hiccup.core :refer [html]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
-            [com.tylerkindy.jeopardy.db.players :refer [get-player list-players update-score]]
-            [com.tylerkindy.jeopardy.db.endless-clues :refer [insert-clue get-current-clue]]
-            [org.httpkit.server :refer [as-channel send!]]
+            [com.tylerkindy.jeopardy.db.players :refer [get-player]]
+            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
+            [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message]]
+            [org.httpkit.server :refer [as-channel]]
             [com.tylerkindy.jeopardy.common :refer [scripts page]]
-            [cheshire.core :as json]
-            [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
-            [clojure.core.match :refer [match]]))
+            [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all!]]
+            [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]))
 
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
@@ -30,40 +30,6 @@
     (insert-game ds {:id id, :mode 0})
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
-
-(defonce live-games (atom {}))
-
-(defn transition! [game-id from-pred to-state]
-  (let [new-val (swap! live-games
-                       (fn [live-games]
-                         (if (from-pred (get-in live-games [game-id :state]))
-                           (assoc-in live-games [game-id :state] to-state)
-                           live-games)))]
-    (= (get-in new-val [game-id :state])
-       to-state)))
-
-(defn who-view [game-id]
-  (let [player-ids (or (->> (get-in @live-games [game-id :players])
-                            keys
-                            set)
-                       #{})
-        players (->> (list-players ds {:game-id game-id})
-                     (filter (fn [{:keys [id]}] (player-ids id)))
-                     (sort-by :score)
-                     reverse)]
-    [:div#who
-     [:p "Players"]
-     [:ul
-      (map (fn [{:keys [name score]}]
-             [:li (format "%s: $%,d" name score)])
-           players)]]))
-
-(defn send-all! [game-id message]
-  (let [players (get-in @live-games [game-id :players])]
-    (doseq [[player-id channel] players]
-      (if (fn? message)
-        (send! channel (message player-id))
-        (send! channel message)))))
 
 (defn derive-state [game-id]
   (if (get-current-clue ds {:game-id game-id})
@@ -93,120 +59,6 @@
                (dissoc live-games game-id)
                live-games))))
   (send-all! game-id (html (who-view game-id))))
-
-(defn render-clue [{:keys [category question value]}]
-  (list
-   [:p [:i (str category ", $" value)]]
-   [:p question]))
-
-(defn render-no-clue []
-  [:i "No question yet"])
-
-(defn clue-view [clue]
-  [:div#clue
-   (if clue
-     (render-clue clue)
-     (render-no-clue))])
-
-(defn new-clue! [game-id]
-  (let [clue (-> (random-clue)
-                 (select-keys [:category :question :answer :value])
-                 (update :category :title)
-                 (assoc :game-id game-id))]
-    (insert-clue ds clue)
-    (swap! live-games assoc-in [game-id :state] {:name :open-for-answers})
-    (send-all! game-id (html (clue-view clue)))))
-
-(defn request-new-clue [game-id]
-  (when (transition! game-id
-                     (fn [{:keys [name]}] (#{:idle :open-for-answers} name))
-                     {:name :drawing-clue})
-    (new-clue! game-id)))
-
-(defn buzzing-form [game-id player-id]
-  (let [live-game (get @live-games game-id)
-        state (get-in live-game [:state :name])
-        buzzed-in-id (get-in live-game [:state :buzzed-in])
-        [type button-text form-attrs button-attrs]
-        (match [state buzzed-in-id]
-          [:answering player-id] [:answer "Submit" nil nil]
-          [:answering _] [:buzz-in
-                          "Buzz in (spacebar)"
-                          {:hx-trigger "click, keyup[key==' '] from:body"}
-                          {:disabled ""}]
-          :else           [:buzz-in
-                           "Buzz in (spacebar)"
-                           {:hx-trigger "click, keyup[key==' '] from:body"}
-                           nil])]
-    [:form (merge {:ws-send ""} form-attrs)
-     [:input {:name :type, :value type, :hidden ""}]
-     (when (= type :answer)
-       [:input {:type :text, :name :answer, :autofocus "", :autocomplete :off}])
-     [:button (merge {:style "width: 100%; height: 100px;"}
-                     button-attrs)
-      button-text]]))
-
-(defn buzzing-view [game-id player-id]
-  (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
-        buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
-        message (if buzzed-in-player
-                  (str (:name buzzed-in-player) " buzzed in")
-                  "No one is buzzed in")]
-    [:div#buzzing
-     [:p [:i message]]
-     (buzzing-form game-id player-id)]))
-
-(defn buzz-in [game-id player-id]
-  (when (transition! game-id
-                     (fn [{:keys [name]}] (= name :open-for-answers))
-                     {:name :answering, :buzzed-in player-id})
-    (send-all! game-id
-               (fn [player-id]
-                 (html (buzzing-view game-id player-id))))))
-
-(defn endless-container [game-id player-id]
-  (let [clue (get-current-clue ds {:game-id game-id})]
-    [:div#endless
-     (who-view game-id)
-     (clue-view clue)
-     (buzzing-view game-id player-id)
-     [:form {:ws-send ""}
-      [:input {:name :type, :value :new-clue, :hidden ""}]
-      [:button "New question"]]]))
-
-(defn right-answer [game-id player-id value]
-  (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
-    (update-score ds {:id player-id, :score (+ score value)}))
-  (send-all! game-id
-             (fn [player-id]
-               (html (endless-container game-id player-id))))
-  (new-clue! game-id))
-
-(defn wrong-answer [game-id]
-  (swap! live-games assoc-in [game-id :state] {:name :open-for-answers}))
-
-(defn check-answer [game-id player-id {guess :answer}]
-  (when (transition! game-id
-                     (fn [{:keys [name buzzed-in]}]
-                       (and (= name :answering)
-                            (= player-id buzzed-in)))
-                     {:name :checking-answer})
-    (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
-      ; TODO: implement edit distance
-      ; TODO: strip HTML (I've seen <a>, <i>)
-      (if (= answer guess)
-        (right-answer game-id player-id value)
-        (wrong-answer game-id)))
-    (send-all! game-id
-               (fn [player-id]
-                 (html (endless-container game-id player-id))))))
-
-(defn receive-message [game-id player-id message]
-  (let [message (json/parse-string message keyword)]
-    (case (keyword (:type message))
-      :new-clue (request-new-clue game-id)
-      :buzz-in  (buzz-in game-id player-id)
-      :answer   (check-answer game-id player-id message))))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
