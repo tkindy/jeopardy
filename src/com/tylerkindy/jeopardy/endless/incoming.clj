@@ -40,7 +40,9 @@
                (html (endless-container game-id player-id))))
   (new-clue! game-id))
 
-(defn wrong-answer [game-id]
+(defn wrong-answer [game-id player-id value]
+  (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
+    (update-score ds {:id player-id, :score (- score value)}))
   (swap! live-games assoc-in [game-id :state] {:name :open-for-answers}))
 
 (defn check-answer [game-id player-id {guess :answer}]
@@ -52,7 +54,7 @@
     (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
       (if (correct? answer (normalize-answer guess))
         (right-answer game-id player-id value)
-        (wrong-answer game-id)))
+        (wrong-answer game-id player-id value)))
     (send-all! game-id
                (fn [player-id]
                  (html (endless-container game-id player-id))))))
