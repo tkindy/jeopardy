@@ -17,6 +17,11 @@ jobs:
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-m2
+    - name: Cache Clojure gitlibs
+      uses: actions/cache@v3.2.2
+      with:
+        path: ~/.gitlibs
+        key: ${{ runner.os }}-gitlibs
     - name: Setup JDK
       uses: actions/setup-java@v3.9.0
       with:
