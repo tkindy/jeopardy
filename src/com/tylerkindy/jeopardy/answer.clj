@@ -45,4 +45,4 @@
        (+ (count s1-pairs) (count s2-pairs)))))
 
 (defn similar? [l r]
-  (>= (similarity l r) 0.5))
+  (>= (similarity l r) 0.75))
