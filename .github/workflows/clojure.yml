@@ -16,3 +16,5 @@ jobs:
       uses: DeLaGuardo/setup-clojure@05cb4bfdf57855f122e75b71e45224775cdfc4a0
       with:
         cli: "1.11.1.1208"
+    - name: Build
+      run: clj -T:build uber
