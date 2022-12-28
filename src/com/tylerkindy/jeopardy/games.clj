@@ -1,17 +1,17 @@
 (ns com.tylerkindy.jeopardy.games
-  (:require [compojure.core :refer [defroutes context POST GET]]
+  (:require [com.tylerkindy.jeopardy.common :refer [scripts page]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
-            [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
-            [hiccup.core :refer [html]]
-            [ring.util.anti-forgery :refer [anti-forgery-field]]
-            [com.tylerkindy.jeopardy.players :refer [player-routes]]
-            [com.tylerkindy.jeopardy.db.players :refer [get-player]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
+            [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
+            [com.tylerkindy.jeopardy.db.players :refer [get-player]]
             [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message]]
-            [org.httpkit.server :refer [as-channel]]
-            [com.tylerkindy.jeopardy.common :refer [scripts page]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]))
+            [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]
+            [com.tylerkindy.jeopardy.players :refer [player-routes]]
+            [compojure.core :refer [defroutes context POST GET]]
+            [hiccup.core :refer [html]]
+            [org.httpkit.server :refer [as-channel]]
+            [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
