@@ -14,7 +14,6 @@
                      (sort-by :score)
                      reverse)]
     [:div#who
-     [:p "Players"]
      [:ul
       (map (fn [{:keys [name score]}]
              [:li (format "%s: $%,d" name score)])
