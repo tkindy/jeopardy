@@ -1,0 +1,8 @@
+#!/usr/bin/env fish
+
+set artifact (ls target | grep "jeopardy.*\.jar")
+
+echo "Uploading $artifact to server"
+scp "target/$artifact" jeopardy:~
+
+ssh jeopardy ./deploy
