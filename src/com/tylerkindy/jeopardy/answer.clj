@@ -57,5 +57,7 @@
        set))
 
 (defn correct? [answer guess]
-  (some #(similar? % guess)
-        (accepted-answers answer)))
+  (let [answer (normalize-answer answer)
+        guess (normalize-answer guess)]
+    (some #(similar? % guess)
+          (accepted-answers answer))))
