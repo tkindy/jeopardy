@@ -1,6 +1,6 @@
 (ns com.tylerkindy.jeopardy.endless.views
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
-            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
+            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue get-last-answer]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
   (:import [java.text NumberFormat]))
@@ -38,6 +38,11 @@
    (if clue
      (render-clue clue)
      (render-no-clue))])
+
+(defn last-answer-view [last-answer]
+  [:div#last-answer
+   (when last-answer
+     [:i (str "The last answer was: " last-answer)])])
 
 (defn buzzing-form [game-id player-id]
   (let [{state :name
@@ -77,10 +82,12 @@
      (buzzing-form game-id player-id)]))
 
 (defn endless-container [game-id player-id]
-  (let [clue (get-current-clue ds {:game-id game-id})]
+  (let [clue (get-current-clue ds {:game-id game-id})
+        {last-answer :answer} (get-last-answer ds {:game-id game-id})]
     [:div#endless
      (who-view game-id)
      (clue-view clue)
+     (last-answer-view last-answer)
      (buzzing-view game-id player-id)
      [:form {:ws-send ""}
       [:input {:name :type, :value :new-clue, :hidden ""}]
