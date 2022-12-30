@@ -1,7 +1,25 @@
 (ns com.tylerkindy.jeopardy.endless.live
-  (:require [org.httpkit.server :refer [send!]]))
+  (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
+            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
+            [org.httpkit.server :refer [send!]]))
 
 (defonce live-games (atom {}))
+
+(defn derive-state [game-id]
+  (if (get-current-clue ds {:game-id game-id})
+    {:name :open-for-answers
+     :attempted #{}}
+    {:name :idle}))
+
+(defn build-game [game-id]
+  {:state (derive-state game-id)})
+
+(defn setup-game-state! [game-id]
+  (swap! live-games
+         (fn [live-games]
+           (if (get live-games game-id)
+             live-games
+             (assoc live-games game-id (build-game game-id))))))
 
 (defn transition! [game-id from-pred to-state]
   (let [[old new] (swap-vals! live-games

@@ -1,11 +1,10 @@
 (ns com.tylerkindy.jeopardy.games
   (:require [com.tylerkindy.jeopardy.common :refer [scripts page]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
-            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
             [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message]]
-            [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all!]]
+            [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [compojure.core :refer [defroutes context POST GET]]
@@ -30,22 +29,6 @@
     (insert-game ds {:id id, :mode 0})
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
-
-(defn derive-state [game-id]
-  (if (get-current-clue ds {:game-id game-id})
-    {:name :open-for-answers
-     :attempted #{}}
-    {:name :idle}))
-
-(defn build-game [game-id]
-  {:state (derive-state game-id)})
-
-(defn setup-game-state! [game-id]
-  (swap! live-games
-         (fn [live-games]
-           (if (get live-games game-id)
-             live-games
-             (assoc live-games game-id (build-game game-id))))))
 
 (defn connect-player [game-id player-id ch]
   (setup-game-state! game-id)
