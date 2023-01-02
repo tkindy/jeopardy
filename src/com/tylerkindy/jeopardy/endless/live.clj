@@ -8,7 +8,7 @@
 (defn derive-state [game-id]
   (if (get-current-clue ds {:game-id game-id})
     {:name :open-for-answers
-     :attempted #{}}
+     :attempted {}}
     {:name :idle}))
 
 (defn build-game [game-id]

@@ -18,7 +18,7 @@
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
     (swap! live-games assoc-in [game-id :state] {:name :open-for-answers
-                                                 :attempted #{}})
+                                                 :attempted {}})
     (send-all! game-id
                (fn [player-id]
                  (html (endless-container game-id player-id))))))
@@ -90,7 +90,7 @@
                                                          (not (attempted player-id))))
                      (fn [{:keys [attempted]}]
                        {:name :answering
-                        :attempted (conj attempted player-id)
+                        :attempted (assoc attempted player-id "")
                         :buzzed-in player-id
                         :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))}))
     (start-countdown game-id player-id)
@@ -105,7 +105,7 @@
                             (= player-id buzzed-in)))
                      (fn [{:keys [attempted]}]
                        {:name :checking-answer
-                        :attempted attempted}))
+                        :attempted (assoc attempted player-id guess)}))
     (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
       (if (correct? answer (normalize-answer guess))
         (right-answer game-id player-id value)
