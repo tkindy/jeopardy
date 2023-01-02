@@ -7,7 +7,8 @@
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [buzzing-view endless-container]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
-            [hiccup.core :refer [html]]))
+            [hiccup.core :refer [html]])
+  (:import [java.util Timer TimerTask]))
 
 (defn new-clue! [game-id]
   (let [clue (-> (random-clue)
@@ -27,6 +28,28 @@
                      {:name :drawing-clue})
     (new-clue! game-id)))
 
+(defn buzz-timeout-task [game-id player-id current-clue-id]
+  (proxy [TimerTask] []
+    (run []
+      (when (transition! game-id
+                         (fn [{:keys [name buzzed-in]}]
+                           (let [clue-id (:id (get-current-clue ds {:game-id game-id}))]
+                             (and (= name :answering)
+                                  (= buzzed-in player-id)
+                                  (= clue-id current-clue-id))))
+                         (fn [{:keys [attempted]}]
+                           {:name :open-for-answers
+                            :attempted attempted}))
+        (send-all! game-id
+                   (fn [player-id]
+                     (html (endless-container game-id player-id))))))))
+
+(defn start-countdown [game-id player-id]
+  (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))]
+    (doto (Timer.)
+      (.schedule (buzz-timeout-task game-id player-id current-clue-id)
+                 (* 10 1000)))))
+
 (defn buzz-in [game-id player-id]
   (when (transition! game-id
                      (fn [{:keys [name attempted]}] (and (= name :open-for-answers)
@@ -35,6 +58,7 @@
                        {:name :answering
                         :attempted (conj attempted player-id)
                         :buzzed-in player-id}))
+    (start-countdown game-id player-id)
     (send-all! game-id
                (fn [player-id]
                  (html (buzzing-view game-id player-id))))))
