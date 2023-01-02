@@ -50,8 +50,10 @@
 (defn buzz-timer-update-task [game-id]
   (proxy [TimerTask] []
     (run []
-      (send-all! game-id
-                 (html (buzz-time-left-view game-id))))))
+      (let [view (buzz-time-left-view game-id)]
+        (if view
+          (send-all! game-id (html view))
+          (.cancel this))))))
 
 (defn buzz-timeout-task [game-id player-id current-clue-id update-task]
   (proxy [TimerTask] []
