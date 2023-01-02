@@ -4,7 +4,8 @@
             [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
   (:import [java.text NumberFormat]
-           [java.time Duration]))
+           [java.time Duration]
+           [java.time.temporal ChronoUnit]))
 
 (def score-format (doto (NumberFormat/getCurrencyInstance)
                     (.setMaximumFractionDigits 0)))
@@ -74,7 +75,9 @@
 
 (defn buzz-time-left [buzz-deadline]
   (let [time-left (-> (max 0 (- buzz-deadline (System/nanoTime)))
-                      Duration/ofNanos)]
+                      Duration/ofNanos
+                      (.truncatedTo ChronoUnit/SECONDS)
+                      (.plusSeconds 1))]
     (str (.toSeconds time-left) "s remaining")))
 
 (defn buzz-time-left-view [game-id]
