@@ -8,6 +8,7 @@
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [compojure.core :refer [defroutes context POST GET]]
+            [garden.core :refer [css]]
             [hiccup.core :refer [html]]
             [org.httpkit.server :refer [as-channel]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
@@ -59,6 +60,9 @@
 (defn endless-logged-in-page [{game-id :id} req]
   (let [player-id (get-in req [:session :id])]
     (page
+     (list
+      [:style (css {:pretty-print? false}
+                   [".wrong-guess" {:color :red}])])
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

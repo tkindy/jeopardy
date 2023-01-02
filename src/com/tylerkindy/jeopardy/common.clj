@@ -7,11 +7,13 @@
 
 (def scripts (list htmx-script htmx-ws-script idiomorph-ext-script))
 
-(defn page [body]
-  (html5
-   {:lang :en}
-   [:head
-    [:title "Jeopardy"]
-    [:meta {:name :viewport, :content "width=device-width, initial-scale-1"}]
-    [:style ".wrong-guess { color: red; }"]]
-   body))
+(defn page
+  ([body] (page nil body))
+  ([head-elems body]
+   (html5
+    {:lang :en}
+    [:head
+     [:title "Jeopardy"]
+     [:meta {:name :viewport, :content "width=device-width, initial-scale-1"}]
+     head-elems]
+    body)))
