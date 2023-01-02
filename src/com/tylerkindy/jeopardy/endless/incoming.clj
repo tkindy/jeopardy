@@ -77,7 +77,8 @@
                      (fn [{:keys [attempted]}]
                        {:name :answering
                         :attempted (conj attempted player-id)
-                        :buzzed-in player-id}))
+                        :buzzed-in player-id
+                        :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))}))
     (start-countdown game-id player-id)
     (send-all! game-id
                (fn [player-id]

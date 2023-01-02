@@ -3,7 +3,8 @@
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue get-last-answer]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
-  (:import [java.text NumberFormat]))
+  (:import [java.text NumberFormat]
+           [java.time Duration]))
 
 (def score-format (doto (NumberFormat/getCurrencyInstance)
                     (.setMaximumFractionDigits 0)))
@@ -71,11 +72,21 @@
                      button-attrs)
       button-text]]))
 
+(defn buzz-time-left [buzz-deadline]
+  (let [time-left (-> (max 0 (- buzz-deadline (System/nanoTime)))
+                      Duration/ofNanos)]
+    (str (.toSeconds time-left) "s")))
+
 (defn buzzing-view [game-id player-id]
-  (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
+  (let [{buzzed-in-id :buzzed-in
+         buzz-deadline :buzz-deadline}
+        (get-in @live-games [game-id :state])
         buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
         message (if buzzed-in-player
-                  (str (:name buzzed-in-player) " buzzed in")
+                  (str (:name buzzed-in-player)
+                       " is buzzed in, "
+                       (buzz-time-left buzz-deadline)
+                       " remaining")
                   "No one is buzzed in")]
     [:div#buzzing
      [:p [:i message]]
