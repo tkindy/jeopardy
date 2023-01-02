@@ -48,12 +48,15 @@
                          :attempted attempted})))))
 
 (defn buzz-timer-update-task [game-id]
-  (proxy [TimerTask] []
-    (run []
-      (let [view (buzz-time-left-view game-id)]
-        (if view
-          (send-all! game-id (html view))
-          (.cancel this))))))
+  (let [last-view (atom nil)]
+    (proxy [TimerTask] []
+      (run []
+        (let [view (buzz-time-left-view game-id)]
+          (if view
+            (when (not= view @last-view)
+              (send-all! game-id (html view))
+              (reset! last-view view))
+            (.cancel this)))))))
 
 (defn buzz-timeout-task [game-id player-id current-clue-id update-task]
   (proxy [TimerTask] []
@@ -77,7 +80,7 @@
   (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))
         update-task (buzz-timer-update-task game-id)]
     (doto (Timer.)
-      (.schedule update-task 0 100)
+      (.schedule update-task 0 50)
       (.schedule (buzz-timeout-task game-id player-id current-clue-id update-task)
                  (.toMillis max-buzz-duration)))))
 
