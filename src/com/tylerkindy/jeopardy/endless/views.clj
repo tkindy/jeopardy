@@ -115,6 +115,6 @@
      (clue-view clue)
      (last-answer-view last-answer)
      (buzzing-view game-id player-id)
-     [:form {:ws-send ""}
+     [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
       [:input {:name :type, :value :new-clue, :hidden ""}]
-      [:button "New question"]]]))
+      [:button "New question (n)"]]]))
