@@ -69,7 +69,8 @@
 
       scripts])))
 
-(defn endless-logged-in [game req]
+(defn endless-logged-in [{game-id :id :as game} req]
+  (setup-game-state! game-id)
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body (endless-logged-in-page game req)})
