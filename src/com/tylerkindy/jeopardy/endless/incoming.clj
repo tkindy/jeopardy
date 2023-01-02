@@ -6,7 +6,7 @@
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [buzzing-view endless-container]]
+            [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view buzzing-view endless-container]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [hiccup.core :refer [html]])
   (:import [java.util Timer TimerTask]))
@@ -51,8 +51,7 @@
   (proxy [TimerTask] []
     (run []
       (send-all! game-id
-                 (fn [player-id]
-                   (html (buzzing-view game-id player-id)))))))
+                 (html (buzz-time-left-view game-id))))))
 
 (defn buzz-timeout-task [game-id player-id current-clue-id update-task]
   (proxy [TimerTask] []

@@ -75,21 +75,22 @@
 (defn buzz-time-left [buzz-deadline]
   (let [time-left (-> (max 0 (- buzz-deadline (System/nanoTime)))
                       Duration/ofNanos)]
-    (str (.toSeconds time-left) "s")))
+    (str (.toSeconds time-left) "s remaining")))
+
+(defn buzz-time-left-view [game-id]
+  (let [{:keys [buzz-deadline]} (get-in @live-games [game-id :state])]
+    (when buzz-deadline
+      [:p#buzz-time-left [:i (buzz-time-left buzz-deadline)]])))
 
 (defn buzzing-view [game-id player-id]
-  (let [{buzzed-in-id :buzzed-in
-         buzz-deadline :buzz-deadline}
-        (get-in @live-games [game-id :state])
+  (let [{buzzed-in-id :buzzed-in} (get-in @live-games [game-id :state])
         buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
         message (if buzzed-in-player
-                  (str (:name buzzed-in-player)
-                       " is buzzed in, "
-                       (buzz-time-left buzz-deadline)
-                       " remaining")
+                  (str (:name buzzed-in-player) " is buzzed in")
                   "No one is buzzed in")]
     [:div#buzzing
      [:p [:i message]]
+     (buzz-time-left-view game-id)
      (buzzing-form game-id player-id)]))
 
 (defn endless-container [game-id player-id]
