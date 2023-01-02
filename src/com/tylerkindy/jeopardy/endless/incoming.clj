@@ -49,18 +49,19 @@
 (defn buzz-timeout-task [game-id player-id current-clue-id]
   (proxy [TimerTask] []
     (run []
-      (when (transition! game-id
-                         (fn [{:keys [name buzzed-in]}]
-                           (let [clue-id (:id (get-current-clue ds {:game-id game-id}))]
+      (let [{clue-id :id, value :value} (get-current-clue ds {:game-id game-id})]
+        (when (transition! game-id
+                           (fn [{:keys [name buzzed-in]}]
                              (and (= name :answering)
                                   (= buzzed-in player-id)
-                                  (= clue-id current-clue-id))))
-                         (fn [{:keys [attempted]}]
-                           {:name :open-for-answers
-                            :attempted attempted}))
-        (send-all! game-id
-                   (fn [player-id]
-                     (html (endless-container game-id player-id))))))))
+                                  (= clue-id current-clue-id)))
+                           (fn [{:keys [attempted]}]
+                             {:name :timing-out
+                              :attempted attempted}))
+          (wrong-answer game-id player-id value)
+          (send-all! game-id
+                     (fn [player-id]
+                       (html (endless-container game-id player-id)))))))))
 
 (defn start-countdown [game-id player-id]
   (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))]
