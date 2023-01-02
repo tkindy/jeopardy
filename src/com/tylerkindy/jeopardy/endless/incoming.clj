@@ -1,6 +1,7 @@
 (ns com.tylerkindy.jeopardy.endless.incoming
   (:require [cheshire.core :as json]
             [com.tylerkindy.jeopardy.answer :refer [normalize-answer correct?]]
+            [com.tylerkindy.jeopardy.constants :refer [max-buzz-duration]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
@@ -67,7 +68,7 @@
   (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))]
     (doto (Timer.)
       (.schedule (buzz-timeout-task game-id player-id current-clue-id)
-                 (* 10 1000)))))
+                 (.toMillis max-buzz-duration)))))
 
 (defn buzz-in [game-id player-id]
   (when (transition! game-id
