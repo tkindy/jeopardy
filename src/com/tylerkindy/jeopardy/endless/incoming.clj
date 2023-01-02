@@ -32,10 +32,12 @@
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
     (update-score ds {:id player-id, :score (+ score value)}))
-  (send-all! game-id
-             (fn [player-id]
-               (html (endless-container game-id player-id))))
-  (new-clue! game-id))
+  (swap! live-games
+         (fn [live-games]
+           (update-in live-games [game-id :state]
+                      (fn [{:keys [attempted]}]
+                        {:name :idle
+                         :attempted (assoc-in attempted [player-id :correct?] true)})))))
 
 (defn wrong-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
@@ -45,7 +47,7 @@
            (update-in live-games [game-id :state]
                       (fn [{:keys [attempted]}]
                         {:name :open-for-answers
-                         :attempted attempted})))))
+                         :attempted (assoc-in attempted [player-id :correct?] false)})))))
 
 (defn buzz-timer-update-task [game-id]
   (let [last-view (atom nil)]
@@ -90,7 +92,7 @@
                                                          (not (attempted player-id))))
                      (fn [{:keys [attempted]}]
                        {:name :answering
-                        :attempted (assoc attempted player-id "")
+                        :attempted (assoc attempted player-id {})
                         :buzzed-in player-id
                         :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))}))
     (start-countdown game-id player-id)
@@ -105,7 +107,7 @@
                             (= player-id buzzed-in)))
                      (fn [{:keys [attempted]}]
                        {:name :checking-answer
-                        :attempted (assoc attempted player-id guess)}))
+                        :attempted (assoc-in attempted [player-id :guess] guess)}))
     (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
       (if (correct? answer (normalize-answer guess))
         (right-answer game-id player-id value)

@@ -13,8 +13,9 @@
   (.format score-format score))
 
 (defn guess-line [live-game player-id]
-  (when-let [guess (get-in live-game [:state :attempted player-id])]
-    [:span.wrong-guess " (" guess ")"]))
+  (when-let [{:keys [guess correct?]} (get-in live-game [:state :attempted player-id])]
+    (let [class (if correct? "right-guess" "wrong-guess")]
+      [:span {:class class} " (" guess ")"])))
 
 (defn who-view [game-id]
   (let [live-game (get @live-games game-id)
@@ -68,7 +69,8 @@
         form-attrs (if (= type :buzz-in)
                      {:hx-trigger "click, keyup[key==' '] from:body"}
                      nil)
-        button-attrs (if (or (and (= state :answering)
+        button-attrs (if (or (= state :idle)
+                             (and (= state :answering)
                                   (not= buzzed-in-id player-id))
                              (and (= state :open-for-answers)
                                   (attempted player-id)))

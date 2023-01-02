@@ -62,6 +62,7 @@
     (page
      (list
       [:style (css {:pretty-print? false}
+                   [".right-guess" {:color :green}]
                    [".wrong-guess" {:color :red}])])
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
