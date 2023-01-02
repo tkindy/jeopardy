@@ -12,8 +12,14 @@
 (defn format-score [score]
   (.format score-format score))
 
+(defn guess-line [live-game player-id]
+  (when-let [guess (get-in live-game [:state :attempted player-id])]
+    [:span.wrong-guess " (" guess ")"]))
+
 (defn who-view [game-id]
-  (let [player-ids (or (->> (get-in @live-games [game-id :players])
+  (let [live-game (get @live-games game-id)
+        player-ids (or (->> live-game
+                            :players
                             keys
                             set)
                        #{})
@@ -23,8 +29,11 @@
                      reverse)]
     [:div#who
      [:ul
-      (map (fn [{:keys [name score]}]
-             [:li (format "%s: %s" name (format-score score))])
+      (map (fn [{:keys [id name score]}]
+             [:li (format "%s: %s"
+                          name
+                          (format-score score))
+              (guess-line live-game id)])
            players)]]))
 
 (defn render-clue [{:keys [category question value]}]

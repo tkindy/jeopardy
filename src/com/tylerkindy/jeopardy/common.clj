@@ -12,5 +12,6 @@
    {:lang :en}
    [:head
     [:title "Jeopardy"]
-    [:meta {:name :viewport, :content "width=device-width, initial-scale-1"}]]
+    [:meta {:name :viewport, :content "width=device-width, initial-scale-1"}]
+    [:style ".wrong-guess { color: red; }"]]
    body))
