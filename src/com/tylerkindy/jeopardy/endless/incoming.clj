@@ -28,6 +28,24 @@
                      {:name :drawing-clue})
     (new-clue! game-id)))
 
+(defn right-answer [game-id player-id value]
+  (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
+    (update-score ds {:id player-id, :score (+ score value)}))
+  (send-all! game-id
+             (fn [player-id]
+               (html (endless-container game-id player-id))))
+  (new-clue! game-id))
+
+(defn wrong-answer [game-id player-id value]
+  (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
+    (update-score ds {:id player-id, :score (- score value)}))
+  (swap! live-games
+         (fn [live-games]
+           (update-in live-games [game-id :state]
+                      (fn [{:keys [attempted]}]
+                        {:name :open-for-answers
+                         :attempted attempted})))))
+
 (defn buzz-timeout-task [game-id player-id current-clue-id]
   (proxy [TimerTask] []
     (run []
@@ -62,24 +80,6 @@
     (send-all! game-id
                (fn [player-id]
                  (html (buzzing-view game-id player-id))))))
-
-(defn right-answer [game-id player-id value]
-  (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
-    (update-score ds {:id player-id, :score (+ score value)}))
-  (send-all! game-id
-             (fn [player-id]
-               (html (endless-container game-id player-id))))
-  (new-clue! game-id))
-
-(defn wrong-answer [game-id player-id value]
-  (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
-    (update-score ds {:id player-id, :score (- score value)}))
-  (swap! live-games
-         (fn [live-games]
-           (update-in live-games [game-id :state]
-                      (fn [{:keys [attempted]}]
-                        {:name :open-for-answers
-                         :attempted attempted})))))
 
 (defn check-answer [game-id player-id {guess :answer}]
   (when (transition! game-id
