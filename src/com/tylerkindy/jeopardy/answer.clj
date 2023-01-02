@@ -36,7 +36,7 @@
 ; White Similarity algorithm
 ; http://www.catalysoft.com/articles/StrikeAMatch.html
 (defn char-pairs [s]
-  (->> (str/split s #"\s+")
+  (->> (str/split s #"[\s-]+")
        (mapcat #(partition 2 1 %))
        set))
 
