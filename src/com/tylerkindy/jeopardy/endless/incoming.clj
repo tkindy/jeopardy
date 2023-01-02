@@ -47,9 +47,17 @@
                         {:name :open-for-answers
                          :attempted attempted})))))
 
-(defn buzz-timeout-task [game-id player-id current-clue-id]
+(defn buzz-timer-update-task [game-id]
   (proxy [TimerTask] []
     (run []
+      (send-all! game-id
+                 (fn [player-id]
+                   (html (buzzing-view game-id player-id)))))))
+
+(defn buzz-timeout-task [game-id player-id current-clue-id update-task]
+  (proxy [TimerTask] []
+    (run []
+      (.cancel update-task)
       (let [{clue-id :id, value :value} (get-current-clue ds {:game-id game-id})]
         (when (transition! game-id
                            (fn [{:keys [name buzzed-in]}]
@@ -65,9 +73,11 @@
                        (html (endless-container game-id player-id)))))))))
 
 (defn start-countdown [game-id player-id]
-  (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))]
+  (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))
+        update-task (buzz-timer-update-task game-id)]
     (doto (Timer.)
-      (.schedule (buzz-timeout-task game-id player-id current-clue-id)
+      (.schedule update-task 0 100)
+      (.schedule (buzz-timeout-task game-id player-id current-clue-id update-task)
                  (.toMillis max-buzz-duration)))))
 
 (defn buzz-in [game-id player-id]
