@@ -86,7 +86,7 @@
       [:p#buzz-time-left [:i (buzz-time-left buzz-deadline)]])))
 
 (defn buzzing-view [game-id player-id]
-  (let [{buzzed-in-id :buzzed-in} (get-in @live-games [game-id :state])
+  (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
         buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
         message (if buzzed-in-player
                   (str (:name buzzed-in-player) " is buzzed in")
