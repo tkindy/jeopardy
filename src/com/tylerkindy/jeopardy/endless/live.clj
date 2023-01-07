@@ -30,7 +30,7 @@
                                               (to-state (get live-games game-id)))
                                     (assoc-in live-games [game-id :state] to-state))
                                   live-games)))]
-    (not= old new)))
+    (and (not= old new) (get new game-id))))
 
 (defn send-all! [game-id message]
   (let [players (get-in @live-games [game-id :players])]
