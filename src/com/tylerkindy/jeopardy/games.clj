@@ -3,7 +3,7 @@
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
-            [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message]]
+            [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message vote-for-new-clue]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
@@ -34,7 +34,8 @@
 (defn connect-player [game-id player-id ch]
   (setup-game-state! game-id)
   (swap! live-games assoc-in [game-id :players player-id] ch)
-  (send-all! game-id (html (who-view game-id))))
+  (send-all! game-id (html (who-view game-id)))
+  (vote-for-new-clue game-id nil))
 
 (defn disconnect-player [game-id player-id]
   (swap! live-games
@@ -63,7 +64,8 @@
      (list
       [:style (css {:pretty-print? false}
                    [".right-guess" {:color :green}]
-                   [".wrong-guess" {:color :red}])])
+                   [".wrong-guess" {:color :red}]
+                   [".vote-new-clue" {:color :orange, :font-style :italic}])])
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

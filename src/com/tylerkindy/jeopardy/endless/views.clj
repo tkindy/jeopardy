@@ -17,6 +17,11 @@
     (let [class (if correct? "right-guess" "wrong-guess")]
       [:span {:class class} " (" guess ")"])))
 
+(defn new-clue-vote [live-game player-id]
+  (when-let [votes (get-in live-game [:state :new-clue-votes])]
+    (when (votes player-id)
+      [:span.vote-new-clue " New clue"])))
+
 (defn who-view [game-id]
   (let [live-game (get @live-games game-id)
         player-ids (or (->> live-game
@@ -34,7 +39,8 @@
              [:li (format "%s: %s"
                           name
                           (format-score score))
-              (guess-line live-game id)])
+              (guess-line live-game id)
+              (new-clue-vote live-game id)])
            players)]]))
 
 (defn render-clue [{:keys [category question value]}]

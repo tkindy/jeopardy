@@ -1,5 +1,6 @@
 (ns com.tylerkindy.jeopardy.endless.incoming
   (:require [cheshire.core :as json]
+            [clojure.set :as set]
             [com.tylerkindy.jeopardy.answer :refer [normalize-answer correct?]]
             [com.tylerkindy.jeopardy.constants :refer [max-buzz-duration]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
@@ -24,11 +25,27 @@
                (fn [player-id]
                  (html (endless-container game-id player-id))))))
 
-(defn request-new-clue [game-id]
-  (when (transition! game-id
-                     (fn [{:keys [name]}] (#{:no-clue :open-for-answers} name))
-                     {:name :drawing-clue})
-    (new-clue! game-id)))
+(defn vote-for-new-clue [game-id player-id]
+  (when-let [live-game
+             (transition! game-id
+                          (fn [{:keys [name]}] (#{:no-clue :open-for-answers} name))
+                          (fn [{{:keys [name attempted new-clue-votes]} :state,
+                                :keys [players]}]
+                            (let [new-clue-votes (or new-clue-votes #{})
+                                  new-clue-votes (if player-id
+                                                   (conj new-clue-votes player-id)
+                                                   new-clue-votes)]
+                              (if (set/subset? (set (keys players)) new-clue-votes)
+                                {:name :drawing-clue}
+                                {:name name
+                                 :attempted attempted
+                                 :new-clue-votes new-clue-votes}))))]
+    (println live-game)
+    (send-all! game-id
+               (fn [player-id]
+                 (html (endless-container game-id player-id))))
+    (when (= (get-in live-game [:state :name]) :drawing-clue)
+      (new-clue! game-id))))
 
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
@@ -121,6 +138,6 @@
 (defn receive-message [game-id player-id message]
   (let [message (json/parse-string message keyword)]
     (case (keyword (:type message))
-      :new-clue (request-new-clue game-id)
+      :new-clue (vote-for-new-clue game-id player-id)
       :buzz-in  (buzz-in game-id player-id)
       :answer   (check-answer game-id player-id message))))
