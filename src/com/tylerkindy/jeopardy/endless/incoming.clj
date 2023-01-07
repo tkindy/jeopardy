@@ -8,7 +8,8 @@
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view buzzing-view endless-container]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
-            [hiccup.core :refer [html]])
+            [hiccup.core :refer [html]]
+            [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
 
 (defn new-clue! [game-id]
@@ -101,20 +102,21 @@
                  (html (buzzing-view game-id player-id))))))
 
 (defn check-answer [game-id player-id {guess :answer}]
-  (when (transition! game-id
-                     (fn [{:keys [name buzzed-in]}]
-                       (and (= name :answering)
-                            (= player-id buzzed-in)))
-                     (fn [{:keys [attempted]}]
-                       {:name :checking-answer
-                        :attempted (assoc-in attempted [player-id :guess] guess)}))
-    (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
-      (if (correct? answer (normalize-answer guess))
-        (right-answer game-id player-id value)
-        (wrong-answer game-id player-id value)))
-    (send-all! game-id
-               (fn [player-id]
-                 (html (endless-container game-id player-id))))))
+  (let [guess (escape-html guess)]
+    (when (transition! game-id
+                       (fn [{:keys [name buzzed-in]}]
+                         (and (= name :answering)
+                              (= player-id buzzed-in)))
+                       (fn [{:keys [attempted]}]
+                         {:name :checking-answer
+                          :attempted (assoc-in attempted [player-id :guess] guess)}))
+      (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
+        (if (correct? answer (normalize-answer guess))
+          (right-answer game-id player-id value)
+          (wrong-answer game-id player-id value)))
+      (send-all! game-id
+                 (fn [player-id]
+                   (html (endless-container game-id player-id)))))))
 
 (defn receive-message [game-id player-id message]
   (let [message (json/parse-string message keyword)]
