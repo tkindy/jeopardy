@@ -69,7 +69,7 @@
         form-attrs (if (= type :buzz-in)
                      {:hx-trigger "click, keyup[key==' '] from:body"}
                      nil)
-        button-attrs (if (or (= state :idle)
+        button-attrs (if (or (= state :no-clue)
                              (and (= state :answering)
                                   (not= buzzed-in-id player-id))
                              (and (= state :open-for-answers)

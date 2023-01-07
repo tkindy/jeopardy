@@ -26,7 +26,7 @@
 
 (defn request-new-clue [game-id]
   (when (transition! game-id
-                     (fn [{:keys [name]}] (#{:idle :open-for-answers} name))
+                     (fn [{:keys [name]}] (#{:no-clue :open-for-answers} name))
                      {:name :drawing-clue})
     (new-clue! game-id)))
 
@@ -37,7 +37,7 @@
          (fn [live-games]
            (update-in live-games [game-id :state]
                       (fn [{:keys [attempted]}]
-                        {:name :idle
+                        {:name :no-clue
                          :attempted (assoc-in attempted [player-id :correct?] true)})))))
 
 (defn wrong-answer [game-id player-id value]

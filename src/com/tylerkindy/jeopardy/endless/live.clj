@@ -9,7 +9,7 @@
   (if (get-current-clue ds {:game-id game-id})
     {:name :open-for-answers
      :attempted {}}
-    {:name :idle}))
+    {:name :no-clue}))
 
 (defn build-game [game-id]
   {:state (derive-state game-id)})
