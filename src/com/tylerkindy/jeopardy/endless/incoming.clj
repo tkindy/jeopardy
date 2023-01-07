@@ -71,7 +71,7 @@
                              (and (= name :answering)
                                   (= buzzed-in player-id)
                                   (= clue-id current-clue-id)))
-                           (fn [{:keys [attempted]}]
+                           (fn [{{:keys [attempted]} :state}]
                              {:name :timing-out
                               :attempted attempted}))
           (wrong-answer game-id player-id value)
@@ -91,7 +91,7 @@
   (when (transition! game-id
                      (fn [{:keys [name attempted]}] (and (= name :open-for-answers)
                                                          (not (attempted player-id))))
-                     (fn [{:keys [attempted]}]
+                     (fn [{{:keys [attempted]} :state}]
                        {:name :answering
                         :attempted (assoc attempted player-id {})
                         :buzzed-in player-id
@@ -107,7 +107,7 @@
                        (fn [{:keys [name buzzed-in]}]
                          (and (= name :answering)
                               (= player-id buzzed-in)))
-                       (fn [{:keys [attempted]}]
+                       (fn [{{:keys [attempted]} :state}]
                          {:name :checking-answer
                           :attempted (assoc-in attempted [player-id :guess] guess)}))
       (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]

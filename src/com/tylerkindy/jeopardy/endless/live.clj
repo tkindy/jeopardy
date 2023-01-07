@@ -26,7 +26,8 @@
                               (fn [live-games]
                                 (if (from-pred (get-in live-games [game-id :state]))
                                   (if (fn? to-state)
-                                    (update-in live-games [game-id :state] to-state)
+                                    (assoc-in live-games [game-id :state]
+                                              (to-state (get live-games game-id)))
                                     (assoc-in live-games [game-id :state] to-state))
                                   live-games)))]
     (not= old new)))
