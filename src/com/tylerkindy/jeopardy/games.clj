@@ -34,8 +34,7 @@
 (defn connect-player [game-id player-id ch]
   (setup-game-state! game-id)
   (swap! live-games assoc-in [game-id :players player-id] ch)
-  (send-all! game-id (html (who-view game-id)))
-  (vote-for-new-clue game-id nil))
+  (send-all! game-id (html (who-view game-id))))
 
 (defn disconnect-player [game-id player-id]
   (swap! live-games
@@ -44,7 +43,8 @@
              (if (empty? (get-in live-games [game-id :players]))
                (dissoc live-games game-id)
                live-games))))
-  (send-all! game-id (html (who-view game-id))))
+  (send-all! game-id (html (who-view game-id)))
+  (vote-for-new-clue game-id nil))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
