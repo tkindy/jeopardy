@@ -59,9 +59,10 @@
   (swap! live-games
          (fn [live-games]
            (update-in live-games [game-id :state]
-                      (fn [{:keys [attempted]}]
+                      (fn [{:keys [attempted skip-votes]}]
                         {:name :showing-answer
-                         :attempted (assoc-in attempted [player-id :correct?] true)})))))
+                         :attempted (assoc-in attempted [player-id :correct?] true)
+                         :skip-votes skip-votes})))))
 
 (defn wrong-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
@@ -78,7 +79,8 @@
                                             :showing-answer
                                             :open-for-answers)]
                                 {:name state
-                                 :attempted attempted})))))]
+                                 :attempted attempted
+                                 :skip-votes skip-votes})))))]
     (when (= (get-in live-games [game-id :state :name])
              :showing-answer)
       (mark-answered ds {:game-id game-id}))))
@@ -124,9 +126,10 @@
   (when (transition! game-id
                      (fn [{:keys [name attempted]}] (and (= name :open-for-answers)
                                                          (not (attempted player-id))))
-                     (fn [{{:keys [attempted]} :state}]
+                     (fn [{{:keys [attempted skip-votes]} :state}]
                        {:name :answering
                         :attempted (assoc attempted player-id {})
+                        :skip-votes skip-votes
                         :buzzed-in player-id
                         :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))}))
     (start-countdown game-id player-id)
@@ -173,9 +176,10 @@
                        (fn [{:keys [name buzzed-in]}]
                          (and (= name :answering)
                               (= player-id buzzed-in)))
-                       (fn [{{:keys [attempted]} :state}]
+                       (fn [{{:keys [attempted skip-votes]} :state}]
                          {:name :checking-answer
-                          :attempted (assoc-in attempted [player-id :guess] guess)}))
+                          :attempted (assoc-in attempted [player-id :guess] guess)
+                          :skip-votes skip-votes}))
       (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
         (if (correct? answer (normalize-answer guess))
           (right-answer game-id player-id value)
