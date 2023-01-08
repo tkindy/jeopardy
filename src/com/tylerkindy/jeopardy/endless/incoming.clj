@@ -127,6 +127,39 @@
                (fn [player-id]
                  (html (endless-container game-id player-id))))))
 
+(defn vote-to-skip [game-id player-id]
+  (when-let [game
+             (transition! game-id
+                          (fn [{:keys [name attempted]}]
+                            (and (= name :open-for-answers)
+                                 (not (contains? (or attempted {})
+                                                 player-id))))
+                          (fn [{:keys [state]}]
+                            (-> state
+                                (select-keys [:attempted :skip-votes])
+                                (assoc :name :voting-to-skip))))]
+    (let [{:keys [state players]} game
+          {:keys [attempted skip-votes]} state
+          skip-votes (or skip-votes #{})
+          skip-votes (if player-id
+                       (conj skip-votes player-id)
+                       skip-votes)
+          new-state (if (set/subset? (set (keys players))
+                                     (set/union skip-votes
+                                                (set (keys (or attempted {})))))
+                      :showing-answer
+                      :open-for-answers)]
+      (swap! live-games
+             (fn [live-games]
+               (assoc-in live-games
+                         [game-id :state]
+                         {:name new-state
+                          :attempted attempted
+                          :skip-votes skip-votes})))
+      (send-all! game-id
+                 (fn [player-id]
+                   (html (endless-container game-id player-id)))))))
+
 (defn check-answer [game-id player-id {guess :answer}]
   (let [guess (escape-html guess)]
     (when (transition! game-id
@@ -147,6 +180,7 @@
 (defn receive-message [game-id player-id message]
   (let [message (json/parse-string message keyword)]
     (case (keyword (:type message))
-      :new-clue (vote-for-new-clue game-id player-id)
-      :buzz-in  (buzz-in game-id player-id)
-      :answer   (check-answer game-id player-id message))))
+      :new-clue  (vote-for-new-clue game-id player-id)
+      :buzz-in   (buzz-in game-id player-id)
+      :skip-clue (vote-to-skip game-id player-id)
+      :answer    (check-answer game-id player-id message))))
