@@ -18,7 +18,7 @@
     (cond
       guess (let [class (if correct? "right-guess" "wrong-guess")]
               [:span {:class class} " (" guess ")"])
-      (skip-votes player-id) [:span {:style "color: purple;"} " skipped"]
+      (skip-votes player-id) [:span {:style "color: purple;"} " [skipped]"]
       :else nil)))
 
 (defn new-clue-vote [live-game player-id]
