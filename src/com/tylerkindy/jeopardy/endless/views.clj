@@ -114,9 +114,12 @@
      (buzz-time-left-view game-id)]))
 
 (defn answer-view [game-id]
-  (let [{last-answer :answer} (get-last-answer ds {:game-id game-id})]
-    [:div#answer
-     (last-answer-view last-answer)]))
+  (let [clue (get-current-clue ds {:game-id game-id})
+        {last-answer :answer} (get-last-answer ds {:game-id game-id})]
+    (list
+     (clue-view clue)
+     [:div#answer
+      (last-answer-view last-answer)])))
 
 (defn question-view [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
