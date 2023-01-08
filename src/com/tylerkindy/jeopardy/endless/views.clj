@@ -123,8 +123,10 @@
 
 (defn question-view [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
-    [:div#question
-     (clue-view clue)]))
+    (list
+     [:div#question
+      (clue-view clue)]
+     (buzzing-view game-id))))
 
 (defn state-view [game-id]
   (case (get-in @live-games [game-id :state :name])
@@ -135,7 +137,6 @@
   [:div#endless
    (who-view game-id)
    (state-view game-id)
-   (buzzing-view game-id)
    (buzzing-form game-id player-id)
    [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
     [:input {:name :type, :value :new-clue, :hidden ""}]
