@@ -40,7 +40,6 @@
                                 {:name name
                                  :attempted attempted
                                  :new-clue-votes new-clue-votes}))))]
-    (println live-game)
     (send-all! game-id
                (fn [player-id]
                  (html (endless-container game-id player-id))))
