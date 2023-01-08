@@ -123,21 +123,27 @@
       [:input {:name :type, :value :new-clue, :hidden ""}]
       [:button "New question (n)"]])))
 
-(defn question-view [game-id]
+(defn skip-form [game-id player-id]
+  [:form {:ws-send "", :hx-trigger "click, keyup[key=='s'] from:body"}
+   [:input {:name :type, :value :skip-clue, :hidden ""}]
+   [:button "Skip question (s)"]])
+
+(defn question-view [game-id player-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     (list
      (when (not (:answered clue))
        [:div#question
         (clue-view clue)])
-     (buzzing-view game-id))))
+     (buzzing-view game-id)
+     (skip-form game-id player-id))))
 
-(defn state-view [game-id]
+(defn state-view [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
     :showing-answer (answer-view game-id)
-    (question-view game-id)))
+    (question-view game-id player-id)))
 
 (defn endless-container [game-id player-id]
   [:div#endless
    (who-view game-id)
-   (state-view game-id)
+   (state-view game-id player-id)
    (buzzing-form game-id player-id)])
