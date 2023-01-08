@@ -103,7 +103,7 @@
     (when buzz-deadline
       [:p#buzz-time-left [:i (buzz-time-left buzz-deadline)]])))
 
-(defn buzzing-view [game-id player-id]
+(defn buzzing-view [game-id]
   (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
         buzzed-in-player (get-player ds {:game-id game-id, :id buzzed-in-id})
         message (if buzzed-in-player
@@ -111,17 +111,29 @@
                   "No one is buzzed in")]
     [:div#buzzing
      [:p [:i message]]
-     (buzz-time-left-view game-id)
-     (buzzing-form game-id player-id)]))
+     (buzz-time-left-view game-id)]))
+
+(defn answer-view [game-id]
+  (let [{last-answer :answer} (get-last-answer ds {:game-id game-id})]
+    [:div#answer
+     (last-answer-view last-answer)]))
+
+(defn question-view [game-id]
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    [:div#question
+     (clue-view clue)]))
+
+(defn state-view [game-id]
+  (case (get-in @live-games [game-id :state :name])
+    :showing-answer (answer-view game-id)
+    (question-view game-id)))
 
 (defn endless-container [game-id player-id]
-  (let [clue (get-current-clue ds {:game-id game-id})
-        {last-answer :answer} (get-last-answer ds {:game-id game-id})]
-    [:div#endless
-     (who-view game-id)
-     (clue-view clue)
-     (last-answer-view last-answer)
-     (buzzing-view game-id player-id)
-     [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
-      [:input {:name :type, :value :new-clue, :hidden ""}]
-      [:button "New question (n)"]]]))
+  [:div#endless
+   (who-view game-id)
+   (state-view game-id)
+   (buzzing-view game-id)
+   (buzzing-form game-id player-id)
+   [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
+    [:input {:name :type, :value :new-clue, :hidden ""}]
+    [:button "New question (n)"]]])

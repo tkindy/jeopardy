@@ -11,9 +11,9 @@ LIMIT 1;
 -- :name get-last-answer :? :1
 SELECT answer FROM endless_clues
 WHERE game_id = :game-id
+AND answered
 ORDER BY id DESC
-LIMIT 1
-OFFSET 1;
+LIMIT 1;
 
 -- :name mark-answered :! :n
 UPDATE endless_clues

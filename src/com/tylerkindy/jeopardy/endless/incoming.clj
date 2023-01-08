@@ -7,7 +7,7 @@
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view buzzing-view endless-container]]
+            [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view endless-container]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [hiccup.core :refer [html]]
             [hiccup.util :refer [escape-html]])
@@ -125,7 +125,7 @@
     (start-countdown game-id player-id)
     (send-all! game-id
                (fn [player-id]
-                 (html (buzzing-view game-id player-id))))))
+                 (html (endless-container game-id player-id))))))
 
 (defn check-answer [game-id player-id {guess :answer}]
   (let [guess (escape-html guess)]
