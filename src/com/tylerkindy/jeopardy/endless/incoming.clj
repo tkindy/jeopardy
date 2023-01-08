@@ -14,7 +14,6 @@
   (:import [java.util Timer TimerTask]))
 
 (defn new-clue! [game-id]
-  (mark-answered ds {:game-id game-id})
   (let [clue (-> (random-clue)
                  (select-keys [:category :question :answer :value])
                  (update :category :title)
@@ -50,6 +49,7 @@
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
     (update-score ds {:id player-id, :score (+ score value)}))
+  (mark-answered ds {:game-id game-id})
   (swap! live-games
          (fn [live-games]
            (update-in live-games [game-id :state]
@@ -60,17 +60,21 @@
 (defn wrong-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
     (update-score ds {:id player-id, :score (- score value)}))
-  (swap! live-games
-         (fn [live-games]
-           (update-in live-games [game-id :state]
-                      (fn [{:keys [attempted]}]
-                        (let [attempted (assoc-in attempted [player-id :correct?] false)
-                              state (if (set/subset? (set (keys (get-in live-games [game-id :players])))
-                                                     (set (keys attempted)))
-                                      :showing-answer
-                                      :open-for-answers)]
-                          {:name state
-                           :attempted attempted}))))))
+  (let [live-games
+        (swap! live-games
+               (fn [live-games]
+                 (update-in live-games [game-id :state]
+                            (fn [{:keys [attempted]}]
+                              (let [attempted (assoc-in attempted [player-id :correct?] false)
+                                    state (if (set/subset? (set (keys (get-in live-games [game-id :players])))
+                                                           (set (keys attempted)))
+                                            :showing-answer
+                                            :open-for-answers)]
+                                {:name state
+                                 :attempted attempted})))))]
+    (when (= (get-in live-games [game-id :state :name])
+             :showing-answer)
+      (mark-answered ds {:game-id game-id}))))
 
 (defn buzz-timer-update-task [game-id]
   (let [last-view (atom nil)]
