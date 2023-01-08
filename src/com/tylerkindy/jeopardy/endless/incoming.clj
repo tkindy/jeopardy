@@ -4,7 +4,7 @@
             [com.tylerkindy.jeopardy.answer :refer [normalize-answer correct?]]
             [com.tylerkindy.jeopardy.constants :refer [max-buzz-duration]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
-            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue]]
+            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view buzzing-view endless-container]]
@@ -14,6 +14,7 @@
   (:import [java.util Timer TimerTask]))
 
 (defn new-clue! [game-id]
+  (mark-answered ds {:game-id game-id})
   (let [clue (-> (random-clue)
                  (select-keys [:category :question :answer :value])
                  (update :category :title)

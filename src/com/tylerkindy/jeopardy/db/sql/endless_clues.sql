@@ -14,3 +14,13 @@ WHERE game_id = :game-id
 ORDER BY id DESC
 LIMIT 1
 OFFSET 1;
+
+-- :name mark-answered :! :n
+UPDATE endless_clues
+SET answered = true
+WHERE id = (
+  SELECT id FROM endless_clues
+  WHERE game_id = :game-id
+  ORDER BY id DESC
+  LIMIT 1
+);
