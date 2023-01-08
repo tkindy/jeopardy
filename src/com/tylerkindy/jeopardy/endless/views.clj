@@ -118,7 +118,10 @@
     (list
      (clue-view clue)
      [:div#answer
-      (last-answer-view (:answer clue))])))
+      (last-answer-view (:answer clue))]
+     [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
+      [:input {:name :type, :value :new-clue, :hidden ""}]
+      [:button "New question (n)"]])))
 
 (defn question-view [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
@@ -137,7 +140,4 @@
   [:div#endless
    (who-view game-id)
    (state-view game-id)
-   (buzzing-form game-id player-id)
-   [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
-    [:input {:name :type, :value :new-clue, :hidden ""}]
-    [:button "New question (n)"]]])
+   (buzzing-form game-id player-id)])
