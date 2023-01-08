@@ -61,7 +61,7 @@
 (defn last-answer-view [last-answer]
   [:div#last-answer
    (when last-answer
-     [:i (str "The last answer was: " last-answer)])])
+     [:p {:style "color: green;"} last-answer])])
 
 (defn buzzing-form [game-id player-id]
   (let [{state :name
