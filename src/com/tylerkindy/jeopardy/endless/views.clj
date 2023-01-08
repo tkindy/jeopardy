@@ -13,10 +13,13 @@
   (.format score-format score))
 
 (defn guess-line [live-game player-id]
-  (when-let [{:keys [guess correct?]} (get-in live-game [:state :attempted player-id])]
-    (when guess
-      (let [class (if correct? "right-guess" "wrong-guess")]
-        [:span {:class class} " (" guess ")"]))))
+  (let [{:keys [guess correct?]} (get-in live-game [:state :attempted player-id])
+        skip-votes (or (get-in live-game [:state :skip-votes]) #{})]
+    (cond
+      guess (let [class (if correct? "right-guess" "wrong-guess")]
+              [:span {:class class} " (" guess ")"])
+      (skip-votes player-id) [:span {:style "color: purple;"} " skipped"]
+      :else nil)))
 
 (defn new-clue-vote [live-game player-id]
   (when-let [votes (get-in live-game [:state :new-clue-votes])]
