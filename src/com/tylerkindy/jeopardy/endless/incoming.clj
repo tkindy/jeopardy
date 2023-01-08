@@ -29,7 +29,7 @@
   (when-let [live-game
              (transition! game-id
                           (fn [{:keys [name]}] (#{:no-clue :showing-answer} name))
-                          (fn [{{:keys [name attempted new-clue-votes]} :state,
+                          (fn [{{:keys [name attempted skip-votes new-clue-votes]} :state,
                                 :keys [players]}]
                             (let [new-clue-votes (or new-clue-votes #{})
                                   new-clue-votes (if player-id
@@ -39,6 +39,7 @@
                                 {:name :drawing-clue}
                                 {:name name
                                  :attempted attempted
+                                 :skip-votes skip-votes
                                  :new-clue-votes new-clue-votes}))))]
     (send-all! game-id
                (fn [player-id]
