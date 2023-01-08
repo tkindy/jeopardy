@@ -14,8 +14,9 @@
 
 (defn guess-line [live-game player-id]
   (when-let [{:keys [guess correct?]} (get-in live-game [:state :attempted player-id])]
-    (let [class (if correct? "right-guess" "wrong-guess")]
-      [:span {:class class} " (" guess ")"])))
+    (when guess
+      (let [class (if correct? "right-guess" "wrong-guess")]
+        [:span {:class class} " (" guess ")"]))))
 
 (defn new-clue-vote [live-game player-id]
   (when-let [votes (get-in live-game [:state :new-clue-votes])]
