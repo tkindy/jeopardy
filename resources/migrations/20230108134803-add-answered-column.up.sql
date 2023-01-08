@@ -1,0 +1,2 @@
+ALTER TABLE endless_clues
+ADD COLUMN answered BOOLEAN NOT NULL DEFAULT false;
