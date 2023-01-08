@@ -6,10 +6,12 @@
 (defonce live-games (atom {}))
 
 (defn derive-state [game-id]
-  (if (get-current-clue ds {:game-id game-id})
-    {:name :open-for-answers
-     :attempted {}}
-    {:name :no-clue}))
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    (cond
+      (not clue)       {:name :no-clue}
+      (:answered clue) {:name :showing-answer}
+      :else            {:name :open-for-answers
+                        :attempted {}})))
 
 (defn build-game [game-id]
   {:state (derive-state game-id)})
