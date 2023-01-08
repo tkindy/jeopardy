@@ -29,7 +29,7 @@
 (defn vote-for-new-clue [game-id player-id]
   (when-let [live-game
              (transition! game-id
-                          (fn [{:keys [name]}] (#{:no-clue :open-for-answers} name))
+                          (fn [{:keys [name]}] (#{:no-clue :showing-answer} name))
                           (fn [{{:keys [name attempted new-clue-votes]} :state,
                                 :keys [players]}]
                             (let [new-clue-votes (or new-clue-votes #{})
@@ -54,7 +54,7 @@
          (fn [live-games]
            (update-in live-games [game-id :state]
                       (fn [{:keys [attempted]}]
-                        {:name :no-clue
+                        {:name :showing-answer
                          :attempted (assoc-in attempted [player-id :correct?] true)})))))
 
 (defn wrong-answer [game-id player-id value]
@@ -64,8 +64,13 @@
          (fn [live-games]
            (update-in live-games [game-id :state]
                       (fn [{:keys [attempted]}]
-                        {:name :open-for-answers
-                         :attempted (assoc-in attempted [player-id :correct?] false)})))))
+                        (let [attempted (assoc-in attempted [player-id :correct?] false)
+                              state (if (set/subset? (set (keys (get-in live-games [game-id :players])))
+                                                     (set (keys attempted)))
+                                      :showing-answer
+                                      :open-for-answers)]
+                          {:name state
+                           :attempted attempted}))))))
 
 (defn buzz-timer-update-task [game-id]
   (let [last-view (atom nil)]
