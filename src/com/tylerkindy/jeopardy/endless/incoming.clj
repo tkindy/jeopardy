@@ -13,6 +13,11 @@
             [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
 
+(defn should-show-answer? [players attempted skip-votes]
+  (set/subset? (set (keys players))
+               (set/union skip-votes
+                          (set (keys (or attempted {}))))))
+
 (defn new-clue! [game-id]
   (let [clue (-> (random-clue)
                  (select-keys [:category :question :answer :value])
@@ -65,10 +70,11 @@
         (swap! live-games
                (fn [live-games]
                  (update-in live-games [game-id :state]
-                            (fn [{:keys [attempted]}]
+                            (fn [{:keys [attempted skip-votes]}]
                               (let [attempted (assoc-in attempted [player-id :correct?] false)
-                                    state (if (set/subset? (set (keys (get-in live-games [game-id :players])))
-                                                           (set (keys attempted)))
+                                    state (if (should-show-answer? (get-in live-games [game-id :players])
+                                                                   attempted
+                                                                   skip-votes)
                                             :showing-answer
                                             :open-for-answers)]
                                 {:name state
@@ -145,9 +151,7 @@
           skip-votes (if player-id
                        (conj skip-votes player-id)
                        skip-votes)
-          new-state (if (set/subset? (set (keys players))
-                                     (set/union skip-votes
-                                                (set (keys (or attempted {})))))
+          new-state (if (should-show-answer? players attempted skip-votes)
                       :showing-answer
                       :open-for-answers)]
       (when (= new-state :showing-answer)
