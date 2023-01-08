@@ -3,7 +3,7 @@
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
-            [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message vote-for-new-clue]]
+            [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message vote-for-new-clue vote-to-skip]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
@@ -44,7 +44,8 @@
                (dissoc live-games game-id)
                live-games))))
   (send-all! game-id (html (who-view game-id)))
-  (vote-for-new-clue game-id nil))
+  (vote-for-new-clue game-id nil)
+  (vote-to-skip game-id nil))
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
