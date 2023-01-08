@@ -150,6 +150,8 @@
                                                 (set (keys (or attempted {})))))
                       :showing-answer
                       :open-for-answers)]
+      (when (= new-state :showing-answer)
+        (mark-answered ds {:game-id game-id}))
       (swap! live-games
              (fn [live-games]
                (assoc-in live-games
