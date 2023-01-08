@@ -124,8 +124,9 @@
 (defn question-view [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     (list
-     [:div#question
-      (clue-view clue)]
+     (when (not (:answered clue))
+       [:div#question
+        (clue-view clue)])
      (buzzing-view game-id))))
 
 (defn state-view [game-id]
