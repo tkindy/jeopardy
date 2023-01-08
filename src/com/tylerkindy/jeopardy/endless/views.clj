@@ -1,6 +1,6 @@
 (ns com.tylerkindy.jeopardy.endless.views
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
-            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue get-last-answer]]
+            [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player list-players]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
   (:import [java.text NumberFormat]
@@ -114,12 +114,11 @@
      (buzz-time-left-view game-id)]))
 
 (defn answer-view [game-id]
-  (let [clue (get-current-clue ds {:game-id game-id})
-        {last-answer :answer} (get-last-answer ds {:game-id game-id})]
+  (let [clue (get-current-clue ds {:game-id game-id})]
     (list
      (clue-view clue)
      [:div#answer
-      (last-answer-view last-answer)])))
+      (last-answer-view (:answer clue))])))
 
 (defn question-view [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
