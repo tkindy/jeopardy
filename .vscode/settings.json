@@ -3,7 +3,7 @@
     {
       "name": "deps.edn + auto-refresh",
       "projectType": "deps.edn",
-      "afterCLJReplJackInCode": "(do (require '[dev :refer [auto-refresh]]) (auto-refresh))",
+      "afterCLJReplJackInCode": "(do (require '[dev :refer [auto-refresh]] '[com.tylerkindy.jeopardy.db.migrations :refer [migrate]]) (auto-refresh) (migrate))",
       "cljsType": "none",
       "menuSelections": {
         "cljAliases": [":repl"]
