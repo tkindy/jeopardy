@@ -189,8 +189,10 @@
                    (html (endless-container game-id player-id)))))))
 
 (defn receive-message [game-id player-id message]
-  (let [message (json/parse-string message keyword)]
-    (case (keyword (:type message))
+  (let [message (-> message
+                    (json/parse-string keyword)
+                    (update :type keyword))]
+    (case (:type message)
       :new-clue  (vote-for-new-clue game-id player-id)
       :buzz-in   (buzz-in game-id player-id)
       :skip-clue (vote-to-skip game-id player-id)
