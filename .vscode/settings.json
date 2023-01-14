@@ -1,0 +1,13 @@
+{
+  "calva.replConnectSequences": [
+    {
+      "name": "deps.edn + auto-refresh",
+      "projectType": "deps.edn",
+      "afterCLJReplJackInCode": "(do (require '[dev :refer [auto-refresh]]) (auto-refresh))",
+      "cljsType": "none",
+      "menuSelections": {
+        "cljAliases": [":repl"]
+      }
+    }
+  ]
+}
