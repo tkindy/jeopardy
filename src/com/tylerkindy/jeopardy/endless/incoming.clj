@@ -114,7 +114,7 @@
                      (fn [player-id]
                        (html (endless-container game-id player-id)))))))))
 
-(defn start-countdown [game-id player-id]
+(defn start-buzzed-countdown [game-id player-id]
   (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))
         update-task (buzz-timer-update-task game-id)]
     (doto (Timer.)
@@ -132,7 +132,7 @@
                         :skip-votes skip-votes
                         :buzzed-in player-id
                         :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))}))
-    (start-countdown game-id player-id)
+    (start-buzzed-countdown game-id player-id)
     (send-all! game-id
                (fn [player-id]
                  (html (endless-container game-id player-id))))))
