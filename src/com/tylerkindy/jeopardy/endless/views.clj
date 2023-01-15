@@ -47,9 +47,12 @@
               (new-clue-vote live-game id)])
            players)]]))
 
-(defn render-clue [{:keys [category question value]}]
+(defn render-category [{:keys [category value]}]
+  [:p#category [:i (str category ", $" value)]])
+
+(defn render-clue [{:keys [question] :as clue}]
   (list
-   [:p [:i (str category ", $" value)]]
+   (render-category clue)
    [:p question]))
 
 (defn render-no-clue []
@@ -94,17 +97,29 @@
                      button-attrs)
       button-text]]))
 
+(defn seconds-left [deadline]
+  (-> (- deadline (System/nanoTime))
+      Duration/ofNanos
+      (.truncatedTo ChronoUnit/SECONDS)
+      (.plusSeconds 1)
+      .toSeconds))
+
 (defn buzz-time-left [buzz-deadline]
-  (let [time-left (-> (max 0 (- buzz-deadline (System/nanoTime)))
-                      Duration/ofNanos
-                      (.truncatedTo ChronoUnit/SECONDS)
-                      (.plusSeconds 1))]
-    (str (.toSeconds time-left) "s remaining")))
+  (let [left (seconds-left buzz-deadline)]
+    (str left "s remaining")))
 
 (defn buzz-time-left-view [game-id]
   (let [{:keys [buzz-deadline]} (get-in @live-games [game-id :state])]
     (when buzz-deadline
       [:p#buzz-time-left [:i (buzz-time-left buzz-deadline)]])))
+
+(defn category-reveal-time-left [left]
+  [:p#category-reveal-time-left left])
+
+(defn category-reveal-time-left-view [game-id]
+  (let [{:keys [reveal-deadline]} (get-in @live-games [game-id :state])]
+    (when reveal-deadline
+      (category-reveal-time-left (seconds-left reveal-deadline)))))
 
 (defn buzzing-view [game-id]
   (let [buzzed-in-id (get-in @live-games [game-id :state :buzzed-in])
@@ -140,9 +155,16 @@
      (buzzing-view game-id)
      (skip-form game-id player-id))))
 
+(defn category-view [game-id]
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    (list
+     (render-category clue)
+     (category-reveal-time-left-view game-id))))
+
 (defn state-view [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
     :no-clue (answer-view game-id)
+    :revealing-category (category-view game-id)
     :showing-answer (answer-view game-id)
     (question-view game-id player-id)))
 

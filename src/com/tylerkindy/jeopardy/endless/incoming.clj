@@ -2,12 +2,12 @@
   (:require [cheshire.core :as json]
             [clojure.set :as set]
             [com.tylerkindy.jeopardy.answer :refer [normalize-answer correct?]]
-            [com.tylerkindy.jeopardy.constants :refer [max-buzz-duration]]
+            [com.tylerkindy.jeopardy.constants :refer [category-reveal-duration max-buzz-duration]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view endless-container]]
+            [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view category-reveal-time-left-view endless-container]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [hiccup.core :refer [html]]
             [hiccup.util :refer [escape-html]])
@@ -18,14 +18,37 @@
                (set/union skip-votes
                           (set (keys (or attempted {}))))))
 
+(defn category-reveal-timer-update-task [game-id]
+  (let [last-view (atom nil)]
+    (proxy [TimerTask] []
+      (run []
+        (let [deadline (get-in @live-games [game-id :state :reveal-deadline])]
+          (if (> (- deadline (System/nanoTime)) 0)
+            (let [view (category-reveal-time-left-view game-id)]
+              (when (not= view @last-view)
+                (send-all! game-id (html view))
+                (reset! last-view view)))
+            (do
+              (.cancel this)
+              (swap! live-games assoc-in [game-id :state]
+                     {:name :open-for-answers, :attempted {}})
+              (send-all! game-id
+                         (fn [player-id]
+                           (html (endless-container game-id player-id)))))))))))
+
+(defn reveal-category [game-id]
+  (swap! live-games assoc-in [game-id :state]
+         {:name :revealing-category,
+          :reveal-deadline (+ (System/nanoTime) (.toNanos category-reveal-duration))})
+  (.schedule (Timer.) (category-reveal-timer-update-task game-id) 0 50))
+
 (defn new-clue! [game-id]
   (let [clue (-> (random-clue)
                  (select-keys [:category :question :answer :value])
                  (update :category :title)
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
-    (swap! live-games assoc-in [game-id :state] {:name :open-for-answers
-                                                 :attempted {}})
+    (reveal-category game-id)
     (send-all! game-id
                (fn [player-id]
                  (html (endless-container game-id player-id))))))
