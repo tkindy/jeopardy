@@ -155,6 +155,10 @@
      (buzzing-view game-id)
      (skip-form game-id player-id))))
 
+(defn drawing-view []
+  (list
+   [:p "Loading..."]))
+
 (defn category-view [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     (list
@@ -164,6 +168,7 @@
 (defn state-view [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
     :no-clue (answer-view game-id)
+    :drawing-clue (drawing-view)
     :revealing-category (category-view game-id)
     :showing-answer (answer-view game-id)
     (question-view game-id player-id)))
