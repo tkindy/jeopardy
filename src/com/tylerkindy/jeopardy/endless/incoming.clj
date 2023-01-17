@@ -131,7 +131,7 @@
                                   (= clue-id current-clue-id)))
                            (fn [{{:keys [attempted]} :state}]
                              {:name :timing-out
-                              :attempted attempted}))
+                              :attempted (assoc-in attempted [player-id :guess] "")}))
           (wrong-answer game-id player-id value)
           (send-all! game-id
                      (fn [player-id]
