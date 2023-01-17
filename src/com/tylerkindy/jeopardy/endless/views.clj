@@ -166,6 +166,20 @@
      (render-category clue)
      (category-reveal-time-left-view game-id))))
 
+(defn question-card [game-id]
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    [:div {:style "display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-around;"}
+     [:p {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]]))
+
+(defn card-view [game-id]
+  [:div#card
+   (case (get-in @live-games [game-id :state :name])
+     ;:no-clue (no-clue-card)
+     ;:drawing-clue (drawing-card)
+     ;:revealing-category (category-card game-id)
+     ;:showing-answer (answer-card game-id)
+     (question-card game-id))])
+
 (defn state-view [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
     :no-clue (answer-view game-id)
@@ -177,5 +191,6 @@
 (defn endless-container [game-id player-id]
   [:div#endless
    (who-view game-id)
+   (card-view game-id)
    (state-view game-id player-id)
    (buzzing-form game-id player-id)])

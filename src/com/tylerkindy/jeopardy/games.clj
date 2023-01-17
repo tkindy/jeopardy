@@ -9,6 +9,7 @@
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [compojure.core :refer [defroutes context POST GET]]
             [garden.core :refer [css]]
+            [garden.stylesheet :refer [at-media]]
             [hiccup.core :refer [html]]
             [org.httpkit.server :refer [as-channel]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
@@ -66,7 +67,17 @@
       [:style (css {:pretty-print? false}
                    [".right-guess" {:color :green}]
                    [".wrong-guess" {:color :red}]
-                   [".vote-new-clue" {:color :orange, :font-style :italic}])])
+                   [".vote-new-clue" {:color :orange, :font-style :italic}]
+                   ["#card" {:background-color "rgb(0, 0, 175)"
+                             :max-width "800px"
+                             :aspect-ratio "16 / 9"
+                             :color :white
+                             :font-family "serif"
+                             :text-align :center}
+                    (at-media {:max-width "599px"}
+                              [:& {:font-size "1rem"}])
+                    (at-media {:min-width "600px"}
+                              [:& {:font-size "2rem"}])])])
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 
