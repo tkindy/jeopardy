@@ -130,15 +130,19 @@
      [:p [:i message]]
      (buzz-time-left-view game-id)]))
 
+(defn new-question-form []
+  [:form.new-question {:ws-send ""
+                       :hx-trigger "click, keyup[key=='n'] from:body"}
+   [:input {:name :type, :value :new-clue, :hidden ""}]
+   [:button "New question (n)"]])
+
 (defn answer-view [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     (list
      (clue-view clue)
      [:div#answer
       (last-answer-view (:answer clue))]
-     [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
-      [:input {:name :type, :value :new-clue, :hidden ""}]
-      [:button "New question (n)"]])))
+     (new-question-form))))
 
 (defn skip-form [game-id player-id]
   [:form.skip {:ws-send "", :hx-trigger "click, keyup[key=='s'] from:body"}
