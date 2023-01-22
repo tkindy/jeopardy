@@ -172,6 +172,19 @@
   [:div {:style "display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-around;"}
    [:p {:style "padding: 0 20%;"} (.toUpperCase "Loading...")]])
 
+(defn category-card [game-id]
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    [:div.category-value
+     [:p.category (.toUpperCase (:category clue))]
+     [:p.value {:style "color: gold;"} "$" (:value clue)]]))
+
+(defn category-card-view [game-id]
+  [:div#category-card.card
+   (case (get-in @live-games [game-id :state :name])
+     :no-clue (no-clue-card)
+     :drawing-clue (drawing-card)
+     (category-card game-id))])
+
 (defn question-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     [:div.clue
@@ -204,6 +217,7 @@
 (defn endless-container [game-id player-id]
   [:div#endless {:hx-swap-oob :morph}
    #_(who-view game-id)
+   (category-card-view game-id)
    (clue-card-view game-id)
    #_(state-view game-id player-id)
    (skip-form game-id player-id)
