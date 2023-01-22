@@ -185,7 +185,7 @@
      [:p.answer {:style "padding: 0 20%;"} (:answer clue)]]))
 
 (defn clue-card-view [game-id]
-  [:div#card
+  [:div#clue-card.card
    (case (get-in @live-games [game-id :state :name])
      :no-clue (no-clue-card)
      :drawing-clue (drawing-card)

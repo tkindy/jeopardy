@@ -92,11 +92,11 @@
                                 :margin "0 auto"
                                 :gap "10px"
                                 :height "100vh"}]
-                   ["#card" {:grid-area :clue
-                             :background-color "rgb(0, 0, 175)"
+                   [".card" {:background-color "rgb(0, 0, 175)"
                              :color :white
                              :font-family "serif"
-                             :text-align :center}
+                             :text-align :center}]
+                   ["#clue-card" {:grid-area :clue}
                     (at-media {:max-width "599px"}
                               [:& {:font-size "1rem"}])
                     (at-media {:min-width "600px"}
