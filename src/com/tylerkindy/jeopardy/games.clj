@@ -80,8 +80,9 @@
                     (at-media {:min-width "600px"}
                               [:& {:font-size "1.5rem"}])
                     [".clue" {:display :grid
-                              :width "100%"
-                              :height "100%"
+                              :width "96%"
+                              :height "96%"
+                              :padding "2%"
                               :grid-template-rows "1fr 0fr"
                               :align-items :center}
                      [".answer" {:opacity "0", :font-size "0"}]
