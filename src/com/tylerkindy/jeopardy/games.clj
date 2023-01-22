@@ -86,7 +86,7 @@
                                 (grid-template-areas [[:category :players]
                                                       [:clue     :players]
                                                       [:button1  :button2]])
-                                :grid-template-rows "2fr 3fr 1fr"
+                                :grid-template-rows "1fr 3fr 1fr"
                                 :grid-template-columns "3fr 1fr"
                                 :max-width "1000px"
                                 :margin "0 auto"
