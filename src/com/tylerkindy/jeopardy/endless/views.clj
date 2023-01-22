@@ -218,11 +218,21 @@
     :showing-answer (answer-view game-id)
     (question-view game-id player-id)))
 
+(defn buttons [game-id player-id]
+  (case (get-in @live-games [game-id :state :name])
+    :open-for-answers (list
+                       (buzzing-form game-id player-id)
+                       (skip-form game-id player-id))
+    :showing-answer (new-question-form)
+    :revealing-category (list
+                         (buzzing-form game-id player-id)
+                         (skip-form game-id player-id))
+    nil))
+
 (defn endless-container [game-id player-id]
   [:div#endless {:hx-swap-oob :morph}
    #_(who-view game-id)
    (category-card-view game-id)
    (clue-card-view game-id)
    #_(state-view game-id player-id)
-   (skip-form game-id player-id)
-   (buzzing-form game-id player-id)])
+   (buttons game-id player-id)])

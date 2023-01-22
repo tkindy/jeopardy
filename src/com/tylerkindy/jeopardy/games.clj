@@ -119,6 +119,9 @@
                    [".buzz-in" {:grid-area "button1"}
                     [:button {:width "100%", :height "100%"}]]
                    [".skip" {:grid-area "button2"}
+                    [:button {:width "100%", :height "100%"}]]
+                   [".new-question" {:grid-row "button1"
+                                     :grid-column "button1 / button2"}
                     [:button {:width "100%", :height "100%"}]])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
