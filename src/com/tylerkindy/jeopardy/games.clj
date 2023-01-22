@@ -114,7 +114,8 @@
                                   :font-size "inherit"
                                   :transition "opacity 2s, font-size 0.5s"}]]
                      [:p {:margin "0"}]]]
-                   ["#category-card" {:grid-area :category}]
+                   ["#category-card" {:grid-area :category
+                                      :font-size "1.5rem"}]
                    [".buzz-in" {:grid-area "button1"}
                     [:button {:width "100%", :height "100%"}]]
                    [".skip" {:grid-area "button2"}
