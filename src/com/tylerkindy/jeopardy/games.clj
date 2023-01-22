@@ -82,8 +82,16 @@
                     [".clue" {:display :grid
                               :width "100%"
                               :height "100%"
-                              :align-items :center}]])])
-     [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
+                              :grid-template-rows "1fr 0fr"
+                              :align-items :center}
+                     [".answer" {:opacity "0", :font-size "0"}]
+                     ["&.show-answer" {:grid-template-rows "1fr 1fr"
+                                       :transition "grid-template-rows 2s"}
+                      [".answer" {:opacity "1"
+                                  :font-size "inherit"
+                                  :transition "opacity 2s, font-size 0.5s"}]]
+                     [:p {:margin "0"}]]])])
+     [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 
       scripts])))

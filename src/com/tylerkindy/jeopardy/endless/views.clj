@@ -177,13 +177,14 @@
 (defn question-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     [:div.clue
-     [:p {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]]))
+     [:p.question {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
+     [:p.answer {:style "padding: 0 20%;"}]]))
 
 (defn answer-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
-    [:div.clue
-     [:p {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
-     [:p {:style "padding: 0 20%;"} (:answer clue)]]))
+    [:div.clue.show-answer
+     [:p.question {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
+     [:p.answer {:style "padding: 0 20%;"} (:answer clue)]]))
 
 (defn card-view [game-id]
   [:div#card
@@ -203,7 +204,7 @@
     (question-view game-id player-id)))
 
 (defn endless-container [game-id player-id]
-  [:div#endless
+  [:div#endless {:hx-swap-oob :morph}
    (who-view game-id)
    (card-view game-id)
    (state-view game-id player-id)
