@@ -12,7 +12,8 @@
             [garden.stylesheet :refer [at-media]]
             [hiccup.core :refer [html]]
             [org.httpkit.server :refer [as-channel]]
-            [ring.util.anti-forgery :refer [anti-forgery-field]]))
+            [ring.util.anti-forgery :refer [anti-forgery-field]]
+            [clojure.string :as str]))
 
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
@@ -60,18 +61,39 @@
        :headers {"Content-Type" "text/html"}
        :body "<p>You're not logged in</p>"})))
 
+(defn grid-template-areas-row [row]
+  (let [row (->> row
+                 (map name)
+                 (str/join " "))]
+    (str "\"" row "\"")))
+
+(defn grid-template-areas [rows]
+  (->> rows
+       (map grid-template-areas-row)
+       (str/join "\n")))
+
 (defn endless-logged-in-page [{game-id :id} req]
   (let [player-id (get-in req [:session :id])]
     (page
      (list
       [:style (css {:pretty-print? false}
+                   [:body {:margin "0"}]
                    [".right-guess" {:color :green}]
                    [".wrong-guess" {:color :red}]
                    [".vote-new-clue" {:color :orange, :font-style :italic}]
-                   ["#card" {:background-color "rgb(0, 0, 175)"
-                             :max-width "600px"
-                             :margin "0 auto"
-                             :aspect-ratio "16 / 9"
+                   ["#endless" {:display :grid
+                                :grid-template-areas
+                                (grid-template-areas [[:category :players]
+                                                      [:clue     :players]
+                                                      [:button1  :button2]])
+                                :grid-template-rows "2fr 3fr 1fr"
+                                :grid-template-columns "3fr 1fr"
+                                :max-width "1000px"
+                                :margin "0 auto"
+                                :gap "10px"
+                                :height "100vh"}]
+                   ["#card" {:grid-area :clue
+                             :background-color "rgb(0, 0, 175)"
                              :color :white
                              :font-family "serif"
                              :text-align :center}
@@ -91,7 +113,11 @@
                       [".answer" {:opacity "1"
                                   :font-size "inherit"
                                   :transition "opacity 2s, font-size 0.5s"}]]
-                     [:p {:margin "0"}]]])])
+                     [:p {:margin "0"}]]]
+                   [".buzz-in" {:grid-area "button1"}
+                    [:button {:width "100%", :height "100%"}]]
+                   [".skip" {:grid-area "button2"}
+                    [:button {:width "100%", :height "100%"}]])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

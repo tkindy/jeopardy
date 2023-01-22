@@ -90,13 +90,11 @@
                                   (attempted player-id)))
                        {:disabled ""}
                        nil)]
-    [:form (merge {:ws-send ""} form-attrs)
+    [:form.buzz-in (merge {:ws-send ""} form-attrs)
      [:input {:name :type, :value type, :hidden ""}]
      (when (= type :answer)
        [:input {:type :text, :name :answer, :autofocus "", :autocomplete :off}])
-     [:button (merge {:style "width: 100%; height: 100px;"}
-                     button-attrs)
-      button-text]]))
+     [:button button-attrs button-text]]))
 
 (defn seconds-left [deadline]
   (-> (- deadline (System/nanoTime))
@@ -143,7 +141,7 @@
       [:button "New question (n)"]])))
 
 (defn skip-form [game-id player-id]
-  [:form {:ws-send "", :hx-trigger "click, keyup[key=='s'] from:body"}
+  [:form.skip {:ws-send "", :hx-trigger "click, keyup[key=='s'] from:body"}
    [:input {:name :type, :value :skip-clue, :hidden ""}]
    [:button "Skip question (s)"]])
 
