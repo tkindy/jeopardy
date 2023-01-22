@@ -210,6 +210,9 @@
      :showing-answer (answer-card game-id)
      (question-card game-id))])
 
+(defn players-view [game-id]
+  [:div#players-card.card])
+
 (defn state-view [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
     :no-clue (answer-view game-id)
@@ -234,5 +237,6 @@
    #_(who-view game-id)
    (category-card-view game-id)
    (clue-card-view game-id)
+   (players-view game-id)
    #_(state-view game-id player-id)
    (buttons game-id player-id)])

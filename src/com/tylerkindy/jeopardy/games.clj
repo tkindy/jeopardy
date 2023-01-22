@@ -116,6 +116,7 @@
                      [:p {:margin "0"}]]]
                    ["#category-card" {:grid-area :category
                                       :font-size "1.5rem"}]
+                   ["#players-card" {:grid-area :players}]
                    [".buzz-in" {:grid-area "button1"}
                     [:button {:width "100%", :height "100%"}]]
                    [".skip" {:grid-area "button2"}
