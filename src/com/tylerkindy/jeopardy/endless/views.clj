@@ -179,13 +179,19 @@
     [:div.clue
      [:p {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]]))
 
+(defn answer-card [game-id]
+  (let [clue (get-current-clue ds {:game-id game-id})]
+    [:div.clue
+     [:p {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
+     [:p {:style "padding: 0 20%;"} (:answer clue)]]))
+
 (defn card-view [game-id]
   [:div#card
    (case (get-in @live-games [game-id :state :name])
      :no-clue (no-clue-card)
      :drawing-clue (drawing-card)
      ;:revealing-category (category-card game-id)
-     ;:showing-answer (answer-card game-id)
+     :showing-answer (answer-card game-id)
      (question-card game-id))])
 
 (defn state-view [game-id player-id]
