@@ -89,9 +89,9 @@
                                 :grid-template-rows "1fr 3fr 1fr"
                                 :grid-template-columns "3fr 1fr"
                                 :max-width "1000px"
-                                :margin "0 auto"
+                                :margin "1vh auto"
                                 :gap "10px"
-                                :height "100vh"}]
+                                :height "98vh"}]
                    [".card" {:background-color "rgb(0, 0, 175)"
                              :color :white
                              :font-family "serif"
