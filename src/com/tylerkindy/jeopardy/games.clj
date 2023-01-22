@@ -69,7 +69,8 @@
                    [".wrong-guess" {:color :red}]
                    [".vote-new-clue" {:color :orange, :font-style :italic}]
                    ["#card" {:background-color "rgb(0, 0, 175)"
-                             :max-width "800px"
+                             :max-width "600px"
+                             :margin "0 auto"
                              :aspect-ratio "16 / 9"
                              :color :white
                              :font-family "serif"
@@ -77,7 +78,7 @@
                     (at-media {:max-width "599px"}
                               [:& {:font-size "1rem"}])
                     (at-media {:min-width "600px"}
-                              [:& {:font-size "2rem"}])])])
+                              [:& {:font-size "1.5rem"}])])])
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

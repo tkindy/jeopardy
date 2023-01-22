@@ -166,6 +166,14 @@
      (render-category clue)
      (category-reveal-time-left-view game-id))))
 
+(defn no-clue-card []
+  [:div {:style "display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-around;"}
+   [:p {:style "padding: 0 20%;"} (.toUpperCase "No clue")]])
+
+(defn drawing-card []
+  [:div {:style "display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-around;"}
+   [:p {:style "padding: 0 20%;"} (.toUpperCase "Loading...")]])
+
 (defn question-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     [:div {:style "display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-around;"}
@@ -174,8 +182,8 @@
 (defn card-view [game-id]
   [:div#card
    (case (get-in @live-games [game-id :state :name])
-     ;:no-clue (no-clue-card)
-     ;:drawing-clue (drawing-card)
+     :no-clue (no-clue-card)
+     :drawing-clue (drawing-card)
      ;:revealing-category (category-card game-id)
      ;:showing-answer (answer-card game-id)
      (question-card game-id))])
