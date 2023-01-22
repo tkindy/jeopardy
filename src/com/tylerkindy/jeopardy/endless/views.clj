@@ -207,7 +207,4 @@
    (card-view game-id)
    #_(state-view game-id player-id)
    (skip-form game-id player-id)
-   [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
-    [:input {:name :type, :value :new-clue, :hidden ""}]
-    [:button "New question (n)"]]
    (buzzing-form game-id player-id)])
