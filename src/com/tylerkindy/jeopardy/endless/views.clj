@@ -184,7 +184,7 @@
      [:p.question {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
      [:p.answer {:style "padding: 0 20%;"} (:answer clue)]]))
 
-(defn card-view [game-id]
+(defn clue-card-view [game-id]
   [:div#card
    (case (get-in @live-games [game-id :state :name])
      :no-clue (no-clue-card)
@@ -204,7 +204,7 @@
 (defn endless-container [game-id player-id]
   [:div#endless {:hx-swap-oob :morph}
    #_(who-view game-id)
-   (card-view game-id)
+   (clue-card-view game-id)
    #_(state-view game-id player-id)
    (skip-form game-id player-id)
    (buzzing-form game-id player-id)])
