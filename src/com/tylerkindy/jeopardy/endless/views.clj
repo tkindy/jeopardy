@@ -176,7 +176,7 @@
 
 (defn question-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
-    [:div {:style "display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-around;"}
+    [:div.question
      [:p {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]]))
 
 (defn card-view [game-id]
