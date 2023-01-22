@@ -87,7 +87,7 @@
                                                       [:clue     :players]
                                                       [:button1  :button2]])
                                 :grid-template-rows "1fr 3fr 1fr"
-                                :grid-template-columns "3fr 1fr"
+                                :grid-template-columns "3fr 2fr"
                                 :max-width "1000px"
                                 :margin "1vh auto"
                                 :gap "10px"
