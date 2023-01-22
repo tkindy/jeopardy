@@ -79,10 +79,10 @@
                               [:& {:font-size "1rem"}])
                     (at-media {:min-width "600px"}
                               [:& {:font-size "1.5rem"}])
-                    [".question" {:display :grid
-                                  :width "100%"
-                                  :height "100%"
-                                  :align-items :center}]])])
+                    [".clue" {:display :grid
+                              :width "100%"
+                              :height "100%"
+                              :align-items :center}]])])
      [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

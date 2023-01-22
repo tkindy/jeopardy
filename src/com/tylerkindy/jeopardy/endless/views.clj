@@ -176,7 +176,7 @@
 
 (defn question-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
-    [:div.question
+    [:div.clue
      [:p {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]]))
 
 (defn card-view [game-id]
