@@ -205,7 +205,11 @@
 
 (defn endless-container [game-id player-id]
   [:div#endless {:hx-swap-oob :morph}
-   (who-view game-id)
+   #_(who-view game-id)
    (card-view game-id)
-   (state-view game-id player-id)
+   #_(state-view game-id player-id)
+   (skip-form game-id player-id)
+   [:form {:ws-send "", :hx-trigger "click, keyup[key=='n'] from:body"}
+    [:input {:name :type, :value :new-clue, :hidden ""}]
+    [:button "New question (n)"]]
    (buzzing-form game-id player-id)])
