@@ -124,7 +124,10 @@
                                      :grid-auto-rows "10vh"
                                      :padding "10px"
                                      :gap "10px"}
-                    [".player" {:background-color :white}
+                    [".player" {:background-color :white
+                                :display :grid
+                                :grid-template-rows "1fr 1fr 1fr"
+                                :align-items :center}
                      [:p {:margin 0
                           :color :black}]]]
                    [".buzz-in" {:grid-area "button1"}
