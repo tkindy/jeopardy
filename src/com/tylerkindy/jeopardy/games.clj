@@ -36,7 +36,9 @@
 (defn connect-player [game-id player-id ch]
   (setup-game-state! game-id)
   (swap! live-games assoc-in [game-id :players player-id] ch)
-  (send-all! game-id (html (who-view game-id))))
+  (send-all! game-id
+             (fn [player-id]
+               (html (endless-container game-id player-id)))))
 
 (defn disconnect-player [game-id player-id]
   (swap! live-games
@@ -117,6 +119,14 @@
                    ["#category-card" {:grid-area :category
                                       :font-size "1.5rem"}]
                    ["#players-card" {:grid-area :players}]
+                   [".players-wrapper" {:display :grid
+                                        :grid-template-columns "1fr 1fr"
+                                        :grid-auto-rows "10vh"
+                                        :margin "10px"
+                                        :gap "10px"}
+                    [".player" {:background-color :white}
+                     [:p {:margin 0
+                          :color :black}]]]
                    [".buzz-in" {:grid-area "button1"}
                     [:button {:width "100%", :height "100%"}]]
                    [".skip" {:grid-area "button2"}

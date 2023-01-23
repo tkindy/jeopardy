@@ -210,8 +210,26 @@
      :showing-answer (answer-card game-id)
      (question-card game-id))])
 
+(defn player-card [{:keys [name score]}]
+  [:div.player
+   [:p.name name]
+   [:p.score (format-score score)]])
+
+(defn player-cards [game-id]
+  (let [player-ids (or (->> (get-in @live-games [game-id :players])
+                            keys
+                            set)
+                       #{})
+        players (->> (list-players ds {:game-id game-id})
+                     (filter (fn [{:keys [id]}] (player-ids id)))
+                     (sort-by :score)
+                     reverse)]
+    (map player-card players)))
+
 (defn players-view [game-id]
-  [:div#players-card.card])
+  [:div#players-card.card
+   [:div.players-wrapper
+    (player-cards game-id)]])
 
 (defn state-view [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
