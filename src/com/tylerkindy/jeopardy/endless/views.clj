@@ -266,9 +266,7 @@
 
 (defn endless-container [game-id player-id]
   [:div#endless {:hx-swap-oob :morph}
-   #_(who-view game-id)
    (category-card-view game-id)
    (clue-card-view game-id)
    (players-view game-id)
-   #_(state-view game-id player-id)
    (buttons game-id player-id)])
