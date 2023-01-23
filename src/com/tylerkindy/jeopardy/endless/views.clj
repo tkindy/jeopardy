@@ -92,9 +92,11 @@
                        nil)]
     [:form.buzz-in (merge {:ws-send ""} form-attrs)
      [:input {:name :type, :value type, :hidden ""}]
-     (when (= type :answer)
-       [:input {:type :text, :name :answer, :autofocus "", :autocomplete :off}])
-     [:button button-attrs button-text]]))
+     (if (= type :answer)
+       (list
+        [:input.answer {:type :text, :name :answer, :autofocus "", :autocomplete :off}]
+        [:button {:style "display: none;"} "Submit"])
+       [:button button-attrs button-text])]))
 
 (defn seconds-left [deadline]
   (-> (- deadline (System/nanoTime))

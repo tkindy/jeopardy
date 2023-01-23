@@ -138,7 +138,11 @@
                      [:p {:margin 0
                           :color :black}]]]
                    [".buzz-in" {:grid-area "button1"}
-                    [:button {:width "100%", :height "100%"}]]
+                    [:button {:width "100%", :height "100%"}]
+                    [:input.answer {:width "100%"
+                                    :height "100%"
+                                    :text-align :center
+                                    :font-size "1.5rem"}]]
                    [".skip" {:grid-area "button2"}
                     [:button {:width "100%", :height "100%"}]]
                    [".new-question" {:grid-row "button1"
