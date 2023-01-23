@@ -131,6 +131,8 @@
                                 :display :grid
                                 :grid-template-rows "1fr 1fr 1fr"
                                 :align-items :center}
+                     ["&.buzzed-in" {:background-color :orange}
+                      [:p {:color :white}]]
                      ["&.right-guess" {:background-color :green}
                       [:p {:color :white}]]
                      ["&.wrong-guess" {:background-color :red}

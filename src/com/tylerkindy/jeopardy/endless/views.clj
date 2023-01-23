@@ -220,12 +220,15 @@
   (let [{:keys [guess correct?]} (get-in live-game [:state :attempted id])
         skip-votes (or (get-in live-game [:state :skip-votes]) #{})
         new-clue-votes (or (get-in live-game [:state :new-clue-votes]) #{})
+        buzzed-in-id (get-in live-game [:state :buzzed-in])
         guess-line (cond
                      guess guess
+                     (= buzzed-in-id id) "..."
                      (skip-votes id) "[skipped]"
                      :else nil)
         class (cond
                 (new-clue-votes id) "vote-new-clue"
+                (= buzzed-in-id id) "buzzed-in"
                 guess (if correct? "right-guess" "wrong-guess")
                 (skip-votes id) "skipped"
                 :else nil)]
