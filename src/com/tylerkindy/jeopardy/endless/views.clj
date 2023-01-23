@@ -197,6 +197,10 @@
      [:p.question {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
      [:p.answer {:style "padding: 0 20%;"}]]))
 
+(defn countdown-card [game-id]
+  [:div.countdown
+   (category-reveal-time-left-view game-id)])
+
 (defn answer-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     [:div.clue.show-answer
@@ -208,7 +212,7 @@
    (case (get-in @live-games [game-id :state :name])
      :no-clue (no-clue-card)
      :drawing-clue (drawing-card)
-     ;:revealing-category (category-card game-id)
+     :revealing-category (countdown-card game-id)
      :showing-answer (answer-card game-id)
      (question-card game-id))])
 
