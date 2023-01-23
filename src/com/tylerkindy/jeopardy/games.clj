@@ -128,9 +128,13 @@
                                 :display :grid
                                 :grid-template-rows "1fr 1fr 1fr"
                                 :align-items :center}
-                     ["&.right-guess" {:background-color :green}]
-                     ["&.wrong-guess" {:background-color :red}]
-                     ["&.skipped" {:background-color :purple}]
+                     ["&.right-guess" {:background-color :green}
+                      [:p {:color :white}]]
+                     ["&.wrong-guess" {:background-color :red}
+                      [:p {:color :white}]]
+                     ["&.skipped" {:background-color :purple
+                                   :color :white}
+                      [:p {:color :white}]]
                      [:p {:margin 0
                           :color :black}]]]
                    [".buzz-in" {:grid-area "button1"}
