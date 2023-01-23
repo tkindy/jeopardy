@@ -118,12 +118,12 @@
                      [:p {:margin "0"}]]]
                    ["#category-card" {:grid-area :category
                                       :font-size "1.5rem"}]
-                   ["#players-card" {:grid-area :players}]
-                   [".players-wrapper" {:display :grid
-                                        :grid-template-columns "1fr 1fr"
-                                        :grid-auto-rows "10vh"
-                                        :margin "10px"
-                                        :gap "10px"}
+                   ["#players-card" {:grid-area :players
+                                     :display :grid
+                                     :grid-template-columns "1fr 1fr"
+                                     :grid-auto-rows "10vh"
+                                     :padding "10px"
+                                     :gap "10px"}
                     [".player" {:background-color :white}
                      [:p {:margin 0
                           :color :black}]]]

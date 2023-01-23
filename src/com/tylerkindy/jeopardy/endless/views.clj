@@ -228,8 +228,7 @@
 
 (defn players-view [game-id]
   [:div#players-card.card
-   [:div.players-wrapper
-    (player-cards game-id)]])
+   (player-cards game-id)])
 
 (defn state-view [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
