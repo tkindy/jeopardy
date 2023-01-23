@@ -257,6 +257,9 @@
     :revealing-category (list
                          (buzzing-form game-id player-id)
                          (skip-form game-id player-id))
+    :answering (list
+                (buzzing-form game-id player-id)
+                (skip-form game-id player-id))
     nil))
 
 (defn endless-container [game-id player-id]
