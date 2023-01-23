@@ -219,12 +219,17 @@
 (defn player-card [live-game {:keys [id name score]}]
   (let [{:keys [guess correct?]} (get-in live-game [:state :attempted id])
         skip-votes (or (get-in live-game [:state :skip-votes]) #{})
-        [guess-line card-attrs]
-        (cond
-          guess [guess {:class (if correct? "right-guess" "wrong-guess")}]
-          (skip-votes id) ["[skipped]" {:class "skipped"}]
-          :else nil)]
-    [:div.player card-attrs
+        new-clue-votes (or (get-in live-game [:state :new-clue-votes]) #{})
+        guess-line (cond
+                     guess guess
+                     (skip-votes id) "[skipped]"
+                     :else nil)
+        class (cond
+                (new-clue-votes id) "vote-new-clue"
+                guess (if correct? "right-guess" "wrong-guess")
+                (skip-votes id) "skipped"
+                :else nil)]
+    [:div.player {:class class}
      [:p.name name]
      [:p.score (format-score score)]
      [:p.guess guess-line]]))

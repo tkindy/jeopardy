@@ -82,7 +82,6 @@
      (list
       [:style (css {:pretty-print? false}
                    [:body {:margin "0"}]
-                   [".vote-new-clue" {:color :orange, :font-style :italic}]
                    ["#endless" {:display :grid
                                 :grid-template-areas
                                 (grid-template-areas [[:category :players]
@@ -138,6 +137,8 @@
                       [:p {:color :white}]]
                      ["&.skipped" {:background-color :purple
                                    :color :white}
+                      [:p {:color :white}]]
+                     ["&.vote-new-clue" {:background-color :orange}
                       [:p {:color :white}]]
                      [:p {:margin 0
                           :color :black}]]]
