@@ -261,6 +261,7 @@
 
 (defn buttons [game-id player-id]
   (case (get-in @live-games [game-id :state :name])
+    :no-clue (new-question-form)
     :open-for-answers (list
                        (buzzing-form game-id player-id)
                        (skip-form game-id player-id))
