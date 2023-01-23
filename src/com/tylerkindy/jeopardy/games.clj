@@ -98,6 +98,10 @@
                              :color :white
                              :font-family "serif"
                              :text-align :center}]
+                   [".countdown" {:display :grid
+                                  :align-items :center
+                                  :width "100%"
+                                  :height "100%"}]
                    ["#clue-card" {:grid-area :clue}
                     (at-media {:max-width "599px"}
                               [:& {:font-size "1rem"}])
