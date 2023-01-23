@@ -80,8 +80,6 @@
      (list
       [:style (css {:pretty-print? false}
                    [:body {:margin "0"}]
-                   [".right-guess" {:color :green}]
-                   [".wrong-guess" {:color :red}]
                    [".vote-new-clue" {:color :orange, :font-style :italic}]
                    ["#endless" {:display :grid
                                 :grid-template-areas
@@ -128,6 +126,9 @@
                                 :display :grid
                                 :grid-template-rows "1fr 1fr 1fr"
                                 :align-items :center}
+                     ["&.right-guess" {:background-color :green}]
+                     ["&.wrong-guess" {:background-color :red}]
+                     ["&.skipped" {:background-color :purple}]
                      [:p {:margin 0
                           :color :black}]]]
                    [".buzz-in" {:grid-area "button1"}

@@ -210,13 +210,23 @@
      :showing-answer (answer-card game-id)
      (question-card game-id))])
 
-(defn player-card [{:keys [name score]}]
-  [:div.player
-   [:p.name name]
-   [:p.score (format-score score)]])
+(defn player-card [live-game {:keys [id name score]}]
+  (let [{:keys [guess correct?]} (get-in live-game [:state :attempted id])
+        skip-votes (or (get-in live-game [:state :skip-votes]) #{})
+        [guess-line card-attrs]
+        (cond
+          guess [guess {:class (if correct? "right-guess" "wrong-guess")}]
+          (skip-votes id) ["[skipped]" {:class "skipped"}]
+          :else nil)]
+    [:div.player card-attrs
+     [:p.name name]
+     [:p.score (format-score score)]
+     [:p.guess guess-line]]))
 
 (defn player-cards [game-id]
-  (let [player-ids (or (->> (get-in @live-games [game-id :players])
+  (let [live-game (get @live-games game-id)
+        player-ids (or (->> live-game
+                            :players
                             keys
                             set)
                        #{})
@@ -224,7 +234,7 @@
                      (filter (fn [{:keys [id]}] (player-ids id)))
                      (sort-by :score)
                      reverse)]
-    (map player-card players)))
+    (map (partial player-card live-game) players)))
 
 (defn players-view [game-id]
   [:div#players-card.card
