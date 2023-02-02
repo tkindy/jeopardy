@@ -33,7 +33,7 @@
                                   (attempted player-id)))
                        {:disabled ""}
                        nil)]
-    [:form.buzz-in (merge {:ws-send ""} form-attrs)
+    [:form#buzz-in-form (merge {:ws-send ""} form-attrs)
      [:input {:name :type, :value type, :hidden ""}]
      (if (= type :answer)
        (list
@@ -66,13 +66,13 @@
       (category-reveal-time-left (seconds-left reveal-deadline)))))
 
 (defn new-question-form []
-  [:form.new-question {:ws-send ""
-                       :hx-trigger "click, keyup[key=='n'] from:body"}
+  [:form#new-question-form {:ws-send ""
+                            :hx-trigger "click, keyup[key=='n'] from:body"}
    [:input {:name :type, :value :new-clue, :hidden ""}]
    [:button "New question (n)"]])
 
 (defn skip-form [game-id player-id]
-  [:form.skip {:ws-send "", :hx-trigger "click, keyup[key=='s'] from:body"}
+  [:form#skip-form {:ws-send "", :hx-trigger "click, keyup[key=='s'] from:body"}
    [:input {:name :type, :value :skip-clue, :hidden ""}]
    [:button "Skip question (s)"]])
 
