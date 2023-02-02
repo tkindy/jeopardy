@@ -1,5 +1,6 @@
 (ns com.tylerkindy.jeopardy.endless.live
-  (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
+  (:require [clojure.string :as str]
+            [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [hiccup.core :refer [html]]
             [org.httpkit.server :refer [send!]]))
@@ -40,5 +41,11 @@
     (doseq [[player-id channel] players]
       (let [to-send (if (fn? message)
                       (message player-id)
-                      message)]
+                      message)
+            to-send (if (and (sequential? to-send)
+                             (vector? (first to-send)))
+                      (->> to-send
+                           (map (fn [v] (html v)))
+                           (str/join "\n"))
+                      (html to-send))]
         (send! channel (html to-send))))))
