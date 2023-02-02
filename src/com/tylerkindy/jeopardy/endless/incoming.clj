@@ -26,7 +26,7 @@
           (if (> (- deadline (System/nanoTime)) 0)
             (let [view (category-reveal-time-left-view game-id)]
               (when (not= view @last-view)
-                (send-all! game-id (html view))
+                (send-all! game-id view)
                 (reset! last-view view)))
             (do
               (.cancel this)
@@ -34,7 +34,7 @@
                      {:name :open-for-answers, :attempted {}})
               (send-all! game-id
                          (fn [player-id]
-                           (html (endless-container game-id player-id)))))))))))
+                           (endless-container game-id player-id))))))))))
 
 (defn reveal-category [game-id]
   (swap! live-games assoc-in [game-id :state]
@@ -51,7 +51,7 @@
     (reveal-category game-id)
     (send-all! game-id
                (fn [player-id]
-                 (html (endless-container game-id player-id))))))
+                 (endless-container game-id player-id)))))
 
 (defn vote-for-new-clue [game-id player-id]
   (when-let [live-game
@@ -71,7 +71,7 @@
                                  :new-clue-votes new-clue-votes}))))]
     (send-all! game-id
                (fn [player-id]
-                 (html (endless-container game-id player-id))))
+                 (endless-container game-id player-id)))
     (when (= (get-in live-game [:state :name]) :drawing-clue)
       (new-clue! game-id))))
 
@@ -115,7 +115,7 @@
         (let [view (buzz-time-left-view game-id)]
           (if view
             (when (not= view @last-view)
-              (send-all! game-id (html view))
+              (send-all! game-id view)
               (reset! last-view view))
             (.cancel this)))))))
 
@@ -135,7 +135,7 @@
           (wrong-answer game-id player-id value)
           (send-all! game-id
                      (fn [player-id]
-                       (html (endless-container game-id player-id)))))))))
+                       (endless-container game-id player-id))))))))
 
 (defn start-buzzed-countdown [game-id player-id]
   (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))
@@ -158,7 +158,7 @@
     (start-buzzed-countdown game-id player-id)
     (send-all! game-id
                (fn [player-id]
-                 (html (endless-container game-id player-id))))))
+                 (endless-container game-id player-id)))))
 
 (defn vote-to-skip [game-id player-id]
   (when-let [game
@@ -191,7 +191,7 @@
                           :skip-votes skip-votes})))
       (send-all! game-id
                  (fn [player-id]
-                   (html (endless-container game-id player-id)))))))
+                   (endless-container game-id player-id))))))
 
 (defn check-answer [game-id player-id {guess :answer}]
   (let [guess (escape-html guess)]
@@ -209,7 +209,7 @@
           (wrong-answer game-id player-id value)))
       (send-all! game-id
                  (fn [player-id]
-                   (html (endless-container game-id player-id)))))))
+                   (endless-container game-id player-id))))))
 
 (defn receive-message [game-id player-id message]
   (let [message (-> message

@@ -38,7 +38,7 @@
   (swap! live-games assoc-in [game-id :players player-id] ch)
   (send-all! game-id
              (fn [player-id]
-               (html (endless-container game-id player-id)))))
+               (endless-container game-id player-id))))
 
 (defn disconnect-player [game-id player-id]
   (swap! live-games
@@ -49,7 +49,7 @@
                live-games))))
   (send-all! game-id
              (fn [player-id]
-               (html (endless-container game-id player-id))))
+               (endless-container game-id player-id)))
   (vote-for-new-clue game-id nil)
   (vote-to-skip game-id nil))
 

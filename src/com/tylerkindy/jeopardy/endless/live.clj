@@ -1,6 +1,7 @@
 (ns com.tylerkindy.jeopardy.endless.live
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
+            [hiccup.core :refer [html]]
             [org.httpkit.server :refer [send!]]))
 
 (defonce live-games (atom {}))
@@ -37,6 +38,7 @@
 (defn send-all! [game-id message]
   (let [players (get-in @live-games [game-id :players])]
     (doseq [[player-id channel] players]
-      (if (fn? message)
-        (send! channel (message player-id))
-        (send! channel message)))))
+      (let [to-send (if (fn? message)
+                      (message player-id)
+                      message)]
+        (send! channel (html to-send))))))
