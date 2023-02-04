@@ -1,6 +1,8 @@
 (ns com.tylerkindy.jeopardy.endless.live
-  (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
+  (:require [clojure.string :as str]
+            [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
+            [hiccup.core :refer [html]]
             [org.httpkit.server :refer [send!]]))
 
 (defonce live-games (atom {}))
@@ -14,7 +16,8 @@
                         :attempted {}})))
 
 (defn build-game [game-id]
-  {:state (derive-state game-id)})
+  {:id game-id
+   :state (derive-state game-id)})
 
 (defn setup-game-state! [game-id]
   (swap! live-games
@@ -37,6 +40,13 @@
 (defn send-all! [game-id message]
   (let [players (get-in @live-games [game-id :players])]
     (doseq [[player-id channel] players]
-      (if (fn? message)
-        (send! channel (message player-id))
-        (send! channel message)))))
+      (let [to-send (if (fn? message)
+                      (message player-id)
+                      message)
+            to-send (if (and (sequential? to-send)
+                             (vector? (first to-send)))
+                      (->> to-send
+                           (map (fn [v] (html v)))
+                           (str/join "\n"))
+                      (html to-send))]
+        (send! channel (html to-send))))))

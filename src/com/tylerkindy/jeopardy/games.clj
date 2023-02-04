@@ -5,13 +5,15 @@
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
             [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message vote-for-new-clue vote-to-skip]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [endless-container who-view]]
+            [com.tylerkindy.jeopardy.endless.views :refer [endless-container]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [compojure.core :refer [defroutes context POST GET]]
             [garden.core :refer [css]]
+            [garden.stylesheet :refer [at-media]]
             [hiccup.core :refer [html]]
             [org.httpkit.server :refer [as-channel]]
-            [ring.util.anti-forgery :refer [anti-forgery-field]]))
+            [ring.util.anti-forgery :refer [anti-forgery-field]]
+            [clojure.string :as str]))
 
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
@@ -34,7 +36,9 @@
 (defn connect-player [game-id player-id ch]
   (setup-game-state! game-id)
   (swap! live-games assoc-in [game-id :players player-id] ch)
-  (send-all! game-id (html (who-view game-id))))
+  (send-all! game-id
+             (fn [player-id]
+               (endless-container game-id player-id))))
 
 (defn disconnect-player [game-id player-id]
   (swap! live-games
@@ -43,7 +47,9 @@
              (if (empty? (get-in live-games [game-id :players]))
                (dissoc live-games game-id)
                live-games))))
-  (send-all! game-id (html (who-view game-id)))
+  (send-all! game-id
+             (fn [player-id]
+               (endless-container game-id player-id)))
   (vote-for-new-clue game-id nil)
   (vote-to-skip game-id nil))
 
@@ -59,15 +65,102 @@
        :headers {"Content-Type" "text/html"}
        :body "<p>You're not logged in</p>"})))
 
+(defn grid-template-areas-row [row]
+  (let [row (->> row
+                 (map name)
+                 (str/join " "))]
+    (str "\"" row "\"")))
+
+(defn grid-template-areas [rows]
+  (->> rows
+       (map grid-template-areas-row)
+       (str/join "\n")))
+
 (defn endless-logged-in-page [{game-id :id} req]
   (let [player-id (get-in req [:session :id])]
     (page
      (list
       [:style (css {:pretty-print? false}
-                   [".right-guess" {:color :green}]
-                   [".wrong-guess" {:color :red}]
-                   [".vote-new-clue" {:color :orange, :font-style :italic}])])
-     [:body {:hx-ext "ws", :ws-connect (str "/games/" game-id)}
+                   [:body {:margin "0"}]
+                   ["#endless" {:display :grid
+                                :grid-template-areas
+                                (grid-template-areas [[:category :players]
+                                                      [:clue     :players]
+                                                      [:button1  :button2]])
+                                :grid-template-rows "1fr 3fr 1fr"
+                                :grid-template-columns "3fr 2fr"
+                                :max-width "1000px"
+                                :margin "1vh auto"
+                                :gap "10px"
+                                :height "98vh"}]
+                   [".card" {:background-color "rgb(0, 0, 175)"
+                             :border "3px solid black"
+                             :color :white
+                             :font-family "serif"
+                             :text-align :center}]
+                   [".countdown" {:display :grid
+                                  :align-items :center
+                                  :width "100%"
+                                  :height "100%"}]
+                   ["#clue-card" {:grid-area :clue}
+                    (at-media {:max-width "599px"}
+                              [:& {:font-size "1rem"}])
+                    (at-media {:min-width "600px"}
+                              [:& {:font-size "1.5rem"}])
+                    [".clue" {:display :grid
+                              :width "96%"
+                              :height "96%"
+                              :padding "2%"
+                              :grid-template-rows "1fr 0fr"
+                              :align-items :center}
+                     [".answer" {:opacity "0", :font-size "0"}]
+                     ["&.show-answer" {:grid-template-rows "1fr 1fr"
+                                       :transition "grid-template-rows 2s"}
+                      [".answer" {:opacity "1"
+                                  :font-size "inherit"
+                                  :transition "opacity 2s, font-size 0.5s"}]]
+                     [:p {:margin "0"}]]]
+                   ["#category-card" {:grid-area :category
+                                      :font-size "1.5rem"}]
+                   ["#players-card" {:grid-area :players
+                                     :display :grid
+                                     :grid-template-columns "1fr 1fr"
+                                     :grid-auto-rows "10vh"
+                                     :padding "10px"
+                                     :gap "10px"}
+                    [".player" {:background-color :white
+                                :display :grid
+                                :grid-template-rows "1fr 1fr 1fr"
+                                :align-items :center}
+                     ["&.buzzed-in" {:background-color :orange}
+                      [:p {:color :white}]]
+                     ["&.right-guess" {:background-color :green}
+                      [:p {:color :white}]]
+                     ["&.wrong-guess" {:background-color :red}
+                      [:p {:color :white}]]
+                     ["&.skipped" {:background-color :purple
+                                   :color :white}
+                      [:p {:color :white}]]
+                     ["&.vote-new-clue" {:background-color :orange}
+                      [:p {:color :white}]]
+                     [:p {:margin 0
+                          :color :black}]]]
+                   ["#buttons" {:grid-column "button1 / button2"
+                                :display :grid
+                                :grid-template-columns :subgrid
+                                :grid-template-rows :subgrid}]
+                   ["#buzz-in-form" {:grid-area "button1"}
+                    [:button {:width "100%", :height "100%"}]
+                    [:input.answer {:width "100%"
+                                    :height "100%"
+                                    :text-align :center
+                                    :font-size "1.5rem"}]]
+                   ["#skip-form" {:grid-area "button2"}
+                    [:button {:width "100%", :height "100%"}]]
+                   ["#new-question-form" {:grid-row "button1"
+                                          :grid-column "button1 / button2"}
+                    [:button {:width "100%", :height "100%"}]])])
+     [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 
       scripts])))
