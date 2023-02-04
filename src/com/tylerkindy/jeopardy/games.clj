@@ -155,16 +155,26 @@
                                 :grid-template-columns "3fr 2fr"
                                 :grid-template-rows "1fr"
                                 :gap "10px"}]
-                   ["#buzz-in-form" {:grid-area "button1"}
-                    [:button {:width "100%", :height "100%"}]
-                    [:input.answer {:width "100%"
-                                    :height "100%"
-                                    :text-align :center
+                   ["#buzz-in-form" {:grid-area "button1"
+                                     :display :grid
+                                     :grid-template-columns "1fr"
+                                     :grid-template-rows "1fr"
+                                     :align-items :stretch
+                                     :justify-items :stretch}
+                    [:input.answer {:text-align :center
                                     :font-size "1.5rem"}]]
-                   ["#skip-form" {:grid-area "button2"}
-                    [:button {:width "100%", :height "100%"}]]
-                   ["#new-question-form" {:grid-column "button1 / button2"}
-                    [:button {:width "100%", :height "100%"}]])])
+                   ["#skip-form" {:grid-area "button2"
+                                  :display :grid
+                                  :grid-template-columns "1fr"
+                                  :grid-template-rows "1fr"
+                                  :align-items :stretch
+                                  :justify-items :stretch}]
+                   ["#new-question-form" {:grid-column "button1 / button2"
+                                          :display :grid
+                                          :grid-template-columns "1fr"
+                                          :grid-template-rows "1fr"
+                                          :align-items :stretch
+                                          :justify-items :stretch}])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 
