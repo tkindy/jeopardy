@@ -7,7 +7,7 @@
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view category-reveal-time-left-view endless-container]]
+            [com.tylerkindy.jeopardy.endless.views :refer [answer-card buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
@@ -74,6 +74,11 @@
     (when (= (get-in live-game [:state :name]) :drawing-clue)
       (new-clue! game-id))))
 
+(defn show-answer [game-id]
+  (send-all! game-id [(answer-card game-id)
+                      (players-view game-id)
+                      [:div#buttons (new-question-form)]]))
+
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
     (update-score ds {:id player-id, :score (+ score value)}))
@@ -84,7 +89,8 @@
                       (fn [{:keys [attempted skip-votes]}]
                         {:name :showing-answer
                          :attempted (assoc-in attempted [player-id :correct?] true)
-                         :skip-votes skip-votes})))))
+                         :skip-votes skip-votes}))))
+  (show-answer game-id))
 
 (defn wrong-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
@@ -103,9 +109,14 @@
                                 {:name state
                                  :attempted attempted
                                  :skip-votes skip-votes})))))]
-    (when (= (get-in live-games [game-id :state :name])
-             :showing-answer)
-      (mark-answered ds {:game-id game-id}))))
+    (if (= (get-in live-games [game-id :state :name])
+           :showing-answer)
+      (do
+        (mark-answered ds {:game-id game-id})
+        (show-answer game-id))
+      (send-all! game-id
+                 (fn [player-id]
+                   (endless-container game-id player-id))))))
 
 (defn buzz-timer-update-task [game-id]
   (let [last-view (atom nil)]
@@ -188,9 +199,10 @@
                          {:name new-state
                           :attempted attempted
                           :skip-votes skip-votes})))
-      (send-all! game-id
-                 (fn [player-id]
-                   (endless-container game-id player-id))))))
+      (if (= new-state :showing-answer)
+        (show-answer game-id)
+        (send-all! game-id
+                   (players-view game-id))))))
 
 (defn check-answer [game-id player-id {guess :answer}]
   (let [guess (escape-html guess)]
@@ -205,10 +217,7 @@
       (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
         (if (correct? answer (normalize-answer guess))
           (right-answer game-id player-id value)
-          (wrong-answer game-id player-id value)))
-      (send-all! game-id
-                 (fn [player-id]
-                   (endless-container game-id player-id))))))
+          (wrong-answer game-id player-id value))))))
 
 (defn receive-message [game-id player-id message]
   (let [message (-> message

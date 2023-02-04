@@ -99,17 +99,17 @@
 
 (defn question-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
-    [:div.clue
+    [:div#inner-clue-card.clue
      [:p.question {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
      [:p.answer {:style "padding: 0 20%;"}]]))
 
 (defn countdown-card [game-id]
-  [:div.countdown
+  [:div#inner-clue-card.countdown
    (category-reveal-time-left-view game-id)])
 
 (defn answer-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
-    [:div.clue.show-answer
+    [:div#inner-clue-card.clue.show-answer {:hx-swap-oob :morph}
      [:p.question {:style "padding: 0 20%;"} (.toUpperCase (:question clue))]
      [:p.answer {:style "padding: 0 20%;"} (:answer clue)]]))
 
@@ -177,7 +177,7 @@
      nil)])
 
 (defn endless-container [game-id player-id]
-  [:div#endless {:hx-swap-oob :morph}
+  [:div#endless
    (category-card-view game-id)
    (clue-card-view game-id)
    (players-view game-id)
