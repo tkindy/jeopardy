@@ -16,7 +16,8 @@
                         :attempted {}})))
 
 (defn build-game [game-id]
-  {:state (derive-state game-id)})
+  {:id game-id
+   :state (derive-state game-id)})
 
 (defn setup-game-state! [game-id]
   (swap! live-games

@@ -128,10 +128,10 @@
         new-clue-votes (or (get-in live-game [:state :new-clue-votes]) #{})
         buzzed-in-id (get-in live-game [:state :buzzed-in])
         guess-line (cond
-                     guess guess
-                     (= buzzed-in-id id) "..."
-                     (skip-votes id) "[skipped]"
-                     :else nil)
+                     guess [:p.guess guess]
+                     (= buzzed-in-id id) (buzz-time-left-view (:id live-game))
+                     (skip-votes id) [:p.guess "[skipped]"]
+                     :else [:p.guess nil])
         class (cond
                 (new-clue-votes id) "vote-new-clue"
                 (= buzzed-in-id id) "buzzed-in"
@@ -141,7 +141,7 @@
     [:div.player {:class class}
      [:p.name name]
      [:p.score (format-score score)]
-     [:p.guess guess-line]]))
+     guess-line]))
 
 (defn player-cards [game-id]
   (let [live-game (get @live-games game-id)
