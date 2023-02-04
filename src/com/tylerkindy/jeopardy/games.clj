@@ -94,6 +94,7 @@
                                 :gap "10px"
                                 :height "98vh"}]
                    [".card" {:background-color "rgb(0, 0, 175)"
+                             :border "3px solid black"
                              :color :white
                              :font-family "serif"
                              :text-align :center}]
