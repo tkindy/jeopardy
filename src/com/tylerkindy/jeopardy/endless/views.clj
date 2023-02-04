@@ -38,7 +38,7 @@
      (if (= type :answer)
        (list
         [:input.answer {:type :text, :name :answer, :autofocus "", :autocomplete :off}]
-        [:button {:style "display: none;"} "Submit"])
+        [:button {:style "width: 0; height: 0; padding: 0; border: 0; margin: 0;"} ""])
        [:button button-attrs button-text])]))
 
 (defn seconds-left [deadline]
