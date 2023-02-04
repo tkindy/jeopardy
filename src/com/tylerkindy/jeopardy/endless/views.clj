@@ -161,20 +161,17 @@
    (player-cards game-id)])
 
 (defn buttons [game-id player-id]
-  [:div#buttons
-   (case (get-in @live-games [game-id :state :name])
-     :no-clue (new-question-form)
-     :open-for-answers (list
-                        (buzzing-form game-id player-id)
-                        (skip-form game-id player-id))
-     :showing-answer (new-question-form)
-     :revealing-category (list
-                          (buzzing-form game-id player-id)
-                          (skip-form game-id player-id))
-     :answering (list
-                 (buzzing-form game-id player-id)
-                 (skip-form game-id player-id))
-     nil)])
+  (let [state (get-in @live-games [game-id :state :name])]
+    [:div#buttons
+     (cond
+       (#{:drawing-clue :revealing-category :open-for-answers :answering}
+        state)
+       (list
+        (buzzing-form game-id player-id)
+        (skip-form game-id player-id))
+
+       (#{:no-clue :showing-answer} state)
+       (new-question-form))]))
 
 (defn endless-container [game-id player-id]
   [:div#endless
