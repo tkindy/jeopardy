@@ -138,11 +138,11 @@
                                 :align-items :center}
                      ["&.buzzed-in" {:background-color :orange}
                       [:p {:color :white}]]
-                     ["&.right-guess" {:background-color :green}
+                     ["&.right-guess" {:background-color "#090"}
                       [:p {:color :white}]]
-                     ["&.wrong-guess" {:background-color :red}
+                     ["&.wrong-guess" {:background-color "#c00"}
                       [:p {:color :white}]]
-                     ["&.skipped" {:background-color "#6600cc"
+                     ["&.skipped" {:background-color "#60c"
                                    :color :white}
                       [:p {:color :white}]]
                      ["&.vote-new-clue" {:background-color :orange}
