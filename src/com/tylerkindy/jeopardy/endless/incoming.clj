@@ -7,7 +7,7 @@
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [answer-card buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
+            [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
             [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
@@ -201,7 +201,9 @@
       (if (= new-state :showing-answer)
         (show-answer game-id)
         (send-all! game-id
-                   (players-view game-id))))))
+                   (fn [player-id]
+                     [(players-view game-id)
+                      (buttons game-id player-id)]))))))
 
 (defn check-answer [game-id player-id {guess :answer}]
   (let [guess (escape-html guess)]

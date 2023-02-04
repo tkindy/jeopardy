@@ -71,10 +71,22 @@
    [:input {:name :type, :value :new-clue, :hidden ""}]
    [:button "New question (n)"]])
 
+(defn can-skip? [game-id player-id]
+  (let [{state :name
+         buzzed-in-id :buzzed-in
+         attempted :attempted
+         skipped :skip-votes}
+        (get-in @live-games [game-id :state])]
+    (and (= state :open-for-answers)
+         (not= player-id buzzed-in-id)
+         (not ((or attempted {}) player-id))
+         (not ((or skipped #{}) player-id)))))
+
 (defn skip-form [game-id player-id]
   [:form#skip-form {:ws-send "", :hx-trigger "click, keyup[key=='s'] from:body"}
    [:input {:name :type, :value :skip-clue, :hidden ""}]
-   [:button "Skip question (s)"]])
+   [:button {:disabled (if (can-skip? game-id player-id) false "")}
+    "Skip question (s)"]])
 
 (defn no-clue-card []
   [:div {:style "display: flex; width: 100%; height: 100%; flex-direction: column; justify-content: space-around;"}
