@@ -148,8 +148,10 @@
                           :color :black}]]]
                    ["#buttons" {:grid-column "button1 / button2"
                                 :display :grid
-                                :grid-template-columns :subgrid
-                                :grid-template-rows :subgrid}]
+                                :grid-template-areas (grid-template-areas [[:button1 :button2]])
+                                :grid-template-columns "3fr 2fr"
+                                :grid-template-rows "1fr"
+                                :gap "10px"}]
                    ["#buzz-in-form" {:grid-area "button1"}
                     [:button {:width "100%", :height "100%"}]
                     [:input.answer {:width "100%"
@@ -158,8 +160,7 @@
                                     :font-size "1.5rem"}]]
                    ["#skip-form" {:grid-area "button2"}
                     [:button {:width "100%", :height "100%"}]]
-                   ["#new-question-form" {:grid-row "button1"
-                                          :grid-column "button1 / button2"}
+                   ["#new-question-form" {:grid-column "button1 / button2"}
                     [:button {:width "100%", :height "100%"}]])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
