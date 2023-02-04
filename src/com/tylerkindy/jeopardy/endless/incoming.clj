@@ -68,11 +68,13 @@
                                  :attempted attempted
                                  :skip-votes skip-votes
                                  :new-clue-votes new-clue-votes}))))]
-    (send-all! game-id
-               (fn [player-id]
-                 (endless-container game-id player-id)))
-    (when (= (get-in live-game [:state :name]) :drawing-clue)
-      (new-clue! game-id))))
+    (if (= (get-in live-game [:state :name]) :drawing-clue)
+      (do
+        (send-all! game-id
+                   (fn [player-id]
+                     (endless-container game-id player-id)))
+        (new-clue! game-id))
+      (send-all! game-id (players-view game-id)))))
 
 (defn show-answer [game-id]
   (send-all! game-id [(answer-card game-id)
