@@ -161,19 +161,20 @@
    (player-cards game-id)])
 
 (defn buttons [game-id player-id]
-  (case (get-in @live-games [game-id :state :name])
-    :no-clue (new-question-form)
-    :open-for-answers (list
-                       (buzzing-form game-id player-id)
-                       (skip-form game-id player-id))
-    :showing-answer (new-question-form)
-    :revealing-category (list
-                         (buzzing-form game-id player-id)
-                         (skip-form game-id player-id))
-    :answering (list
-                (buzzing-form game-id player-id)
-                (skip-form game-id player-id))
-    nil))
+  [:div#buttons
+   (case (get-in @live-games [game-id :state :name])
+     :no-clue (new-question-form)
+     :open-for-answers (list
+                        (buzzing-form game-id player-id)
+                        (skip-form game-id player-id))
+     :showing-answer (new-question-form)
+     :revealing-category (list
+                          (buzzing-form game-id player-id)
+                          (skip-form game-id player-id))
+     :answering (list
+                 (buzzing-form game-id player-id)
+                 (skip-form game-id player-id))
+     nil)])
 
 (defn endless-container [game-id player-id]
   [:div#endless {:hx-swap-oob :morph}

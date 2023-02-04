@@ -144,6 +144,10 @@
                       [:p {:color :white}]]
                      [:p {:margin 0
                           :color :black}]]]
+                   ["#buttons" {:grid-column "button1 / button2"
+                                :display :grid
+                                :grid-template-columns :subgrid
+                                :grid-template-rows :subgrid}]
                    ["#buzz-in-form" {:grid-area "button1"}
                     [:button {:width "100%", :height "100%"}]
                     [:input.answer {:width "100%"
