@@ -9,7 +9,6 @@
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [buzz-time-left-view category-reveal-time-left-view endless-container]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
-            [hiccup.core :refer [html]]
             [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
 
