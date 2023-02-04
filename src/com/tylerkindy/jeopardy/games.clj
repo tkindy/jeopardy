@@ -129,6 +129,7 @@
                                      :padding "10px"
                                      :gap "10px"}
                     [".player" {:background-color :white
+                                :border "1px solid white"
                                 :display :grid
                                 :grid-template-rows "1fr 1fr 1fr"
                                 :align-items :center}
