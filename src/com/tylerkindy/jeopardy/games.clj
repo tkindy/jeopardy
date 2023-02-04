@@ -82,6 +82,9 @@
      (list
       [:style (css {:pretty-print? false}
                    [:body {:margin "0"}]
+                   ["button" {:border "2px solid black"
+                              :border-radius "5px"}
+                    [:&:disabled {:border-color :gray}]]
                    ["#endless" {:display :grid
                                 :grid-template-areas
                                 (grid-template-areas [[:category :players]
