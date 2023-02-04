@@ -96,7 +96,7 @@
                                 :margin "1vh auto"
                                 :gap "10px"
                                 :height "98vh"}]
-                   [".card" {:background-color "rgb(0, 0, 175)"
+                   [".card" {:background-color "#00c"
                              :border "3px solid black"
                              :color :white
                              :font-family "serif"
@@ -132,7 +132,7 @@
                                      :padding "10px"
                                      :gap "10px"}
                     [".player" {:background-color :white
-                                :border "1px solid white"
+                                :border "2px solid black"
                                 :display :grid
                                 :grid-template-rows "1fr 1fr 1fr"
                                 :align-items :center}
@@ -142,7 +142,7 @@
                       [:p {:color :white}]]
                      ["&.wrong-guess" {:background-color :red}
                       [:p {:color :white}]]
-                     ["&.skipped" {:background-color :purple
+                     ["&.skipped" {:background-color "#6600cc"
                                    :color :white}
                       [:p {:color :white}]]
                      ["&.vote-new-clue" {:background-color :orange}
