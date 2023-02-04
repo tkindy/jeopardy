@@ -142,10 +142,7 @@
                            (fn [{{:keys [attempted]} :state}]
                              {:name :timing-out
                               :attempted (assoc-in attempted [player-id :guess] "")}))
-          (wrong-answer game-id player-id value)
-          (send-all! game-id
-                     (fn [player-id]
-                       (endless-container game-id player-id))))))))
+          (wrong-answer game-id player-id value))))))
 
 (defn start-buzzed-countdown [game-id player-id]
   (let [current-clue-id (:id (get-current-clue ds {:game-id game-id}))
