@@ -136,6 +136,7 @@
                                 :display :grid
                                 :grid-template-rows "1fr 1fr 1fr"
                                 :align-items :center}
+                     [".guess.skipped" {:font-style :italic}]
                      ["&.buzzed-in" {:background-color :orange}
                       [:p {:color :white}]]
                      ["&.right-guess" {:background-color "#090"}

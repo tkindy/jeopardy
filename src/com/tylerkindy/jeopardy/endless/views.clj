@@ -142,7 +142,7 @@
         guess-line (cond
                      guess [:p.guess guess]
                      (= buzzed-in-id id) (buzz-time-left-view (:id live-game))
-                     (skip-votes id) [:p.guess "[skipped]"]
+                     (skip-votes id) [:p.guess.skipped "[skipped]"]
                      :else [:p.guess nil])
         class (cond
                 (new-clue-votes id) "vote-new-clue"
