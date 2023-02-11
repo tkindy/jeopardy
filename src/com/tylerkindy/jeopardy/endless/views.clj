@@ -186,8 +186,9 @@
        (new-question-form))]))
 
 (defn endless-container [game-id player-id]
-  [:div#endless
-   (category-card-view game-id)
-   (clue-card-view game-id)
-   (players-view game-id)
-   (buttons game-id player-id)])
+  [:div.endless-container
+   [:div#endless
+    (category-card-view game-id)
+    (clue-card-view game-id)
+    (players-view game-id)
+    (buttons game-id player-id)]])

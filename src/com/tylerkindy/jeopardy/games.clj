@@ -85,17 +85,22 @@
                    ["button" {:border "2px solid black"
                               :border-radius "5px"}
                     [:&:disabled {:border-color :gray}]]
-                   ["#endless" {:display :grid
+                   [".endless-container" {:display :flex
+                                          :margin "1vh 1vw"
+                                          :justify-content :center
+                                          :align-items :center}]
+                   ["#endless" {:width "98vw"
+                                :max-width "1000px"
+                                :height "98vh"
+                                :max-height "870px"
+                                :display :grid
                                 :grid-template-areas
                                 (grid-template-areas [[:category :players]
                                                       [:clue     :players]
                                                       [:button1  :button2]])
                                 :grid-template-rows "1fr 3fr 1fr"
                                 :grid-template-columns "3fr 2fr"
-                                :max-width "1000px"
-                                :margin "1vh auto"
-                                :gap "10px"
-                                :height "98vh"}]
+                                :gap "10px"}]
                    [".card" {:background-color "#00c"
                              :border "3px solid black"
                              :color :white
