@@ -18,9 +18,9 @@ jobs:
           path: |
             ~/.m2/repository
             ~/.gitlibs
-          key: ${{ runner.os }}-deps-${{ hashFiles('deps.edn') }}
+          key: ${{ runner.os }}-cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: |
-            ${{ runner.os }}-deps-
+            ${{ runner.os }}-cljdeps-
       - name: Setup JDK
         uses: actions/setup-java@v3.9.0
         with:
