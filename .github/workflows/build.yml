@@ -30,5 +30,7 @@ jobs:
         uses: DeLaGuardo/setup-clojure@05cb4bfdf57855f122e75b71e45224775cdfc4a0
         with:
           cli: "1.11.1.1208"
-      - name: Build
+      - name: Run tests
+        run: clojure -X:test
+      - name: Build uberjar
         run: clojure -T:build uber
