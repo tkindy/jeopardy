@@ -43,10 +43,13 @@
        ms/multiset))
 
 (defn similarity [s1 s2]
-  (let [s1-pairs (char-pairs s1)
-        s2-pairs (char-pairs s2)]
-    (/ (* 2 (ms/count (ms/intersection s1-pairs s2-pairs)))
-       (+ (ms/count s1-pairs) (ms/count s2-pairs)))))
+  (if (or (< (count s1) 2)
+          (< (count s2) 2))
+    (if (= s1 s2) 1 0)
+    (let [s1-pairs (char-pairs s1)
+          s2-pairs (char-pairs s2)]
+      (/ (* 2 (ms/count (ms/intersection s1-pairs s2-pairs)))
+         (+ (ms/count s1-pairs) (ms/count s2-pairs))))))
 
 (defn similar? [l r]
   (>= (similarity l r) 0.75))
