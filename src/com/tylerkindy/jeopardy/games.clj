@@ -10,7 +10,6 @@
             [compojure.core :refer [defroutes context POST GET]]
             [garden.core :refer [css]]
             [garden.stylesheet :refer [at-media]]
-            [hiccup.core :refer [html]]
             [org.httpkit.server :refer [as-channel]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [clojure.string :as str]))

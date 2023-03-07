@@ -1,6 +1,5 @@
 (ns com.tylerkindy.jeopardy.answer
-  (:require [clojure.set :as set]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [com.tylerkindy.jeopardy.multiset :as ms])
   (:import [java.text Normalizer Normalizer$Form]
            [org.jsoup Jsoup]
