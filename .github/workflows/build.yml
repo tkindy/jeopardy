@@ -2,33 +2,33 @@ name: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Cache Clojure deps
-      uses: actions/cache@v3.2.2
-      with:
-        path: |
-          ~/.m2/repository
-          ~/.gitlibs
-        key: ${{ runner.os }}-deps-${{ hashFiles('deps.edn') }}
-        restore-keys: |
-          ${{ runner.os }}-deps-
-    - name: Setup JDK
-      uses: actions/setup-java@v3.9.0
-      with:
-        java-version: "19"
-        distribution: adopt
-    - name: Setup Clojure
-      uses: DeLaGuardo/setup-clojure@05cb4bfdf57855f122e75b71e45224775cdfc4a0
-      with:
-        cli: "1.11.1.1208"
-    - name: Build
-      run: clojure -T:build uber
+      - uses: actions/checkout@v3
+      - name: Cache Clojure deps
+        uses: actions/cache@v3.2.2
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+          key: ${{ runner.os }}-deps-${{ hashFiles('deps.edn') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      - name: Setup JDK
+        uses: actions/setup-java@v3.9.0
+        with:
+          java-version: "19"
+          distribution: adopt
+      - name: Setup Clojure
+        uses: DeLaGuardo/setup-clojure@05cb4bfdf57855f122e75b71e45224775cdfc4a0
+        with:
+          cli: "1.11.1.1208"
+      - name: Build
+        run: clojure -T:build uber
