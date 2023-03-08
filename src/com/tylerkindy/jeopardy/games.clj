@@ -12,7 +12,8 @@
             [garden.stylesheet :refer [at-media]]
             [org.httpkit.server :refer [as-channel]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import [java.time LocalDateTime ZoneOffset]))
 
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
@@ -28,7 +29,7 @@
 
 (defn create-game []
   (let [id (generate-game-id)]
-    (insert-game ds {:id id, :mode 0})
+    (insert-game ds {:id id, :mode 0, :created-at (LocalDateTime/now ZoneOffset/UTC)})
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
 
