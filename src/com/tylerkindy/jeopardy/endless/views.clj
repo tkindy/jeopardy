@@ -99,7 +99,7 @@
 (defn category-card [game-id]
   (let [clue (get-current-clue ds {:game-id game-id})]
     [:div.category-value
-     [:p.category (.toUpperCase (:category clue))]
+     [:p.category (.toUpperCase (:category clue)) " (" (.getYear (:airdate clue)) ")"]
      [:p.value {:style "color: gold;"} "$" (:value clue)]]))
 
 (defn category-card-view [game-id]
