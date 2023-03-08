@@ -1,2 +1,2 @@
 ALTER TABLE endless_clues
-ADD COLUMN year INTEGER;
+ADD COLUMN airdate DATE;
