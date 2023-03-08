@@ -119,6 +119,8 @@
                      [".answer" {:opacity "0", :font-size "0"}]
                      ["&.show-answer" {:grid-template-rows "1fr 1fr"
                                        :transition "grid-template-rows 2s"}
+                      [".question" {:scale 0.75
+                                    :transition "2s"}]
                       [".answer" {:opacity "1"
                                   :font-size "inherit"
                                   :transition "opacity 2s, font-size 0.5s"}]]
