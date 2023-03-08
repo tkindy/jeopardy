@@ -1,0 +1,2 @@
+ALTER TABLE games
+ADD COLUMN created_at TIMESTAMP;
