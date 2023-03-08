@@ -123,7 +123,7 @@
                                     :transition "2s"}]
                       [".answer" {:opacity "1"
                                   :font-size "inherit"
-                                  :transition "opacity 2s, font-size 0.5s"}]]
+                                  :transition "2s"}]]
                      [:p {:margin "0"}]]]
                    ["#category-card" {:grid-area :category
                                       :font-size "1.5rem"}]
