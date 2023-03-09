@@ -74,7 +74,10 @@
                    (fn [player-id]
                      (endless-container game-id player-id)))
         (new-clue! game-id))
-      (send-all! game-id (players-view game-id)))))
+      (send-all! game-id
+                 (fn [player-id]
+                   [(players-view game-id)
+                    [:div#buttons (new-question-form game-id player-id)]])))))
 
 (defn show-answer [game-id]
   (send-all! game-id
