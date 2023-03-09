@@ -77,9 +77,11 @@
       (send-all! game-id (players-view game-id)))))
 
 (defn show-answer [game-id]
-  (send-all! game-id [(answer-card game-id)
-                      (players-view game-id)
-                      [:div#buttons (new-question-form)]]))
+  (send-all! game-id
+             (fn [player-id]
+               [(answer-card game-id)
+                (players-view game-id)
+                [:div#buttons (new-question-form game-id player-id)]])))
 
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]

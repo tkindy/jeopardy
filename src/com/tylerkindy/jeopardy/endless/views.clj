@@ -65,11 +65,17 @@
     (when reveal-deadline
       (category-reveal-time-left (seconds-left reveal-deadline)))))
 
-(defn new-question-form []
+(defn can-vote-next? [game-id player-id]
+  (let [new-clue-votes (get-in @live-games [game-id :state :new-clue-votes])
+        voted? (contains? new-clue-votes player-id)]
+    (not voted?)))
+
+(defn new-question-form [game-id player-id]
   [:form#new-question-form {:ws-send ""
                             :hx-trigger "click, keyup[key=='n'] from:body"}
    [:input {:name :type, :value :new-clue, :hidden ""}]
-   [:button "New question (n)"]])
+   [:button {:disabled (if (can-vote-next? game-id player-id) false "")}
+    "New question (n)"]])
 
 (defn can-skip? [game-id player-id]
   (let [{state :name
@@ -183,7 +189,7 @@
         (skip-form game-id player-id))
 
        (#{:no-clue :showing-answer} state)
-       (new-question-form))]))
+       (new-question-form game-id player-id))]))
 
 (defn endless-container [game-id player-id]
   [:div#endless
