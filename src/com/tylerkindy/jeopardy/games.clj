@@ -7,13 +7,13 @@
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
+            [com.tylerkindy.jeopardy.time :refer [now]]
             [compojure.core :refer [defroutes context POST GET]]
             [garden.core :refer [css]]
             [garden.stylesheet :refer [at-media]]
             [org.httpkit.server :refer [as-channel]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
-            [clojure.string :as str])
-  (:import [java.time LocalDateTime ZoneOffset]))
+            [clojure.string :as str]))
 
 (defn char-range [start end]
   (->> (range (int start) (inc (int end)))
@@ -29,7 +29,7 @@
 
 (defn create-game []
   (let [id (generate-game-id)]
-    (insert-game ds {:id id, :mode 0, :created-at (LocalDateTime/now ZoneOffset/UTC)})
+    (insert-game ds {:id id, :mode 0, :created-at (now)})
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
 

@@ -63,5 +63,5 @@
 (defn correct? [answer guess]
   (let [answer (normalize-answer answer)
         guess (normalize-answer guess)]
-    (some #(similar? % guess)
-          (accepted-answers answer))))
+    (boolean (some #(similar? % guess)
+                   (accepted-answers answer)))))

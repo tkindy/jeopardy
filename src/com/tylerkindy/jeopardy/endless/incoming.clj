@@ -5,10 +5,12 @@
             [com.tylerkindy.jeopardy.constants :refer [category-reveal-duration max-buzz-duration]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
+            [com.tylerkindy.jeopardy.db.guesses :refer [insert-guess]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
             [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
+            [com.tylerkindy.jeopardy.time :refer [now]]
             [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
 
@@ -220,8 +222,11 @@
                          {:name :checking-answer
                           :attempted (assoc-in attempted [player-id :guess] guess)
                           :skip-votes skip-votes}))
-      (let [{:keys [answer value]} (get-current-clue ds {:game-id game-id})]
-        (if (correct? answer (normalize-answer guess))
+      (let [{clue-id :id, :keys [answer value]} (get-current-clue ds {:game-id game-id})
+            correct (correct? answer (normalize-answer guess))]
+        (insert-guess ds {:clue-id clue-id, :player-id player-id,
+                          :guess guess, :correct correct, :guessed-at (now)})
+        (if correct
           (right-answer game-id player-id value)
           (wrong-answer game-id player-id value))))))
 
