@@ -148,8 +148,9 @@
                              (and (= name :answering)
                                   (= buzzed-in player-id)
                                   (= clue-id current-clue-id)))
-                           (fn [{{:keys [attempted]} :state}]
+                           (fn [{{:keys [attempted skip-votes]} :state}]
                              {:name :timing-out
+                              :skip-votes skip-votes
                               :attempted (assoc-in attempted [player-id :guess] "")}))
           (wrong-answer game-id player-id value))))))
 
