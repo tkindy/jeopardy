@@ -20,7 +20,7 @@
 
  :aliases
  {:repl
-  {:paths ["src" "dev" "resources"]
+  {:extra-paths ["dev"]
    :extra-deps {juxt/dirwatch {:mvn/version "0.2.5"}
                 org.clojure/tools.namespace {:mvn/version "1.3.0"}}}
 
