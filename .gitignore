@@ -1,3 +1,3 @@
 config.edn
 target/
-/resources/jeopardy.db
+jeopardy.db

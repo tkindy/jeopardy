@@ -15,6 +15,7 @@
   org.clojure/tools.cli {:mvn/version "1.0.214"}
   org.jsoup/jsoup {:mvn/version "1.15.3"}
   org.postgresql/postgresql {:mvn/version "42.5.1"}
+  org.xerial/sqlite-jdbc {:mvn/version "3.46.0.0"}
   org.slf4j/slf4j-reload4j {:mvn/version "2.0.6"}
   ring/ring-defaults {:mvn/version "0.3.4"}}
 
