@@ -9,7 +9,7 @@
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
-            [com.tylerkindy.jeopardy.jservice :refer [random-clue]]
+            [com.tylerkindy.jeopardy.clues :refer [random-clue]]
             [com.tylerkindy.jeopardy.time :refer [now]]
             [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
@@ -46,7 +46,6 @@
 (defn new-clue! [game-id]
   (let [clue (-> (random-clue)
                  (select-keys [:category :airdate :question :answer :value])
-                 (update :category :title)
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
     (reveal-category game-id)
