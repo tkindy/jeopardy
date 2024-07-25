@@ -32,7 +32,7 @@ select
   cl.question,
   cl.answer,
   cl.value
-from clues
+from clues as cl
 join categories as ca on cl.category_id = ca.id
 join games as g on cl.game_id = g.id
 where g.id = :game-id
