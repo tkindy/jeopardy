@@ -1,6 +1,22 @@
 -- :name insert-clue :! :n
-INSERT INTO endless_clues (game_id, category, airdate, question, answer, value)
-VALUES (:game-id, :category, :airdate, :question, :answer, :value);
+INSERT INTO endless_clues (
+  game_id,
+  lib_clue_id,
+  category,
+  airdate,
+  question,
+  answer,
+  value
+)
+VALUES (
+  :game-id,
+  :lib-clue-id,
+  :category,
+  :airdate,
+  :question,
+  :answer,
+  :value
+);
 
 -- :name get-current-clue :? :1
 SELECT * FROM endless_clues

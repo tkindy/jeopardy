@@ -45,7 +45,7 @@
 
 (defn new-clue! [game-id]
   (let [clue (-> (random-clue)
-                 (select-keys [:category :airdate :question :answer :value])
+                 (select-keys [:lib-clue-id :category :airdate :question :answer :value])
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
     (reveal-category game-id)

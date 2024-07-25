@@ -1,5 +1,6 @@
 -- :name get-random-clues :? :*
 select
+  cl.id as lib_clue_id,
   ca.name as category,
   g.airdate,
   cl.question,
