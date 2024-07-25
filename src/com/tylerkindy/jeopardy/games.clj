@@ -6,6 +6,7 @@
             [com.tylerkindy.jeopardy.endless.incoming :refer [receive-message vote-for-new-clue vote-to-skip]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container]]
+            [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [com.tylerkindy.jeopardy.time :refer [now]]
             [compojure.core :refer [defroutes context POST GET]]
@@ -29,7 +30,7 @@
 
 (defn create-game []
   (let [id (generate-game-id)]
-    (insert-game ds {:id id, :mode 0, :created-at (now)})
+    (insert-game ds {:id id, :mode mode/endless, :created-at (now)})
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
 
