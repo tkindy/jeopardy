@@ -9,5 +9,22 @@
 
     [:form {:action "/games"
             :method :post}
+     [:div.mode
+      [:div
+       [:input#endless {:type :radio
+                        :name :mode
+                        :value :endless
+                        :checked true}]
+       [:label {:for :endless} "Endless"]
+       [:p {:style "margin-left: 2rem"}
+        [:i "An infinite stream of random questions"]]]
+
+      [:div
+       [:input#endless-categories {:type :radio
+                                   :name :mode
+                                   :value :endless-categories}]
+       [:label {:for :endless} "Endless Categories"]
+       [:p {:style "margin-left: 2rem"}
+        [:i "An infinite stream of random questions, organized by category"]]]]
      (anti-forgery-field)
      [:button "New game"]]]))
