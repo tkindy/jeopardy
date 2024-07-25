@@ -213,8 +213,9 @@
       (endless-anon game))))
 
 (defn found-game-response [{:keys [mode] :as game} req]
-  (case mode
-    0 (endless-response game req)
+  (condp = mode
+    mode/endless (endless-response game req)
+    mode/endless-categories (endless-response game req)
     (throw (RuntimeException. (str "Unknown mode: " mode)))))
 
 (defn game-page-response [req]
