@@ -28,9 +28,12 @@
        (map (fn [_] (rand-nth game-id-characters)))
        (apply str)))
 
-(defn create-game []
-  (let [id (generate-game-id)]
-    (insert-game ds {:id id, :mode mode/endless, :created-at (now)})
+(defn create-game [req]
+  (let [id (generate-game-id)
+        mode (condp = (keyword (get-in req [:params :mode]))
+               :endless mode/endless
+               :endless-categories mode/endless-categories)]
+    (insert-game ds {:id id, :mode mode, :created-at (now)})
     {:status 303
      :headers {"Location" (str "/games/" id)}}))
 
@@ -213,8 +216,9 @@
       (endless-anon game))))
 
 (defn found-game-response [{:keys [mode] :as game} req]
-  (case mode
-    0 (endless-response game req)
+  (condp = mode
+    mode/endless (endless-response game req)
+    mode/endless-categories (endless-response game req)
     (throw (RuntimeException. (str "Unknown mode: " mode)))))
 
 (defn game-page-response [req]
@@ -233,7 +237,7 @@
 
 (defroutes game-routes
   (context "/games" []
-    (POST "/" [] (create-game))
+    (POST "/" req (create-game req))
     (context "/:game-id" []
       (GET "/" req (handle-game-request req))
       player-routes)))
