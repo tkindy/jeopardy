@@ -10,7 +10,7 @@
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
-            [com.tylerkindy.jeopardy.clues :refer [random-clue]]
+            [com.tylerkindy.jeopardy.clues :refer [random-clue next-category-clue]]
             [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.time :refer [now]]
             [hiccup.util :refer [escape-html]])
@@ -48,7 +48,8 @@
 (defn pick-clue [game-id]
   (let [{:keys [mode]} (get-game ds {:id game-id})]
     (condp = mode
-      mode/endless (random-clue))))
+      mode/endless            (random-clue)
+      mode/endless-categories (next-category-clue (get-current-clue ds {:game-id game-id})))))
 
 (defn new-clue! [game-id]
   (let [clue (-> (pick-clue game-id)
