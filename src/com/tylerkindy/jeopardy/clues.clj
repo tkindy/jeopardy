@@ -36,14 +36,19 @@
 (defn random-clue []
   (first (random-clues 10)))
 
+(defn pick-from-random-category []
+  (let [category-id (get-random-category ds)
+        game-id (get-random-game-with-category ds {:category-id category-id})]
+    (get-next-category-clue ds {:game-id game-id
+                                :category-id category-id
+                                :last-value -1})))
+
 (defn next-category-clue [{:keys [lib-clue-id]}]
-  (let [category-info (-> (clue-category-info ds {:clue-id lib-clue-id})
-                          (rename-keys {:value :last-value}))
-        next-clue (get-next-category-clue ds category-info)]
-    (if next-clue
-      next-clue
-      (let [category-id (get-random-category ds)
-            game-id (get-random-game-with-category ds {:category-id category-id})]
-        (get-next-category-clue ds {:game-id game-id
-                                    :category-id category-id
-                                    :last-value -1})))))
+  (if lib-clue-id
+    (let [category-info (-> (clue-category-info ds {:clue-id lib-clue-id})
+                            (rename-keys {:value :last-value}))
+          next-clue (get-next-category-clue ds category-info)]
+      (if next-clue
+        next-clue
+        (pick-from-random-category)))
+    (pick-from-random-category)))
