@@ -5,11 +5,13 @@
             [com.tylerkindy.jeopardy.constants :refer [category-reveal-duration max-buzz-duration]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
+            [com.tylerkindy.jeopardy.db.games :refer [get-game]]
             [com.tylerkindy.jeopardy.db.guesses :refer [insert-guess]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
             [com.tylerkindy.jeopardy.clues :refer [random-clue]]
+            [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.time :refer [now]]
             [hiccup.util :refer [escape-html]])
   (:import [java.util Timer TimerTask]))
@@ -43,8 +45,13 @@
           :reveal-deadline (+ (System/nanoTime) (.toNanos category-reveal-duration))})
   (.schedule (Timer.) (category-reveal-timer-update-task game-id) 0 50))
 
+(defn pick-clue [game-id]
+  (let [{:keys [mode]} (get-game ds {:id game-id})]
+    (condp = mode
+      mode/endless (random-clue))))
+
 (defn new-clue! [game-id]
-  (let [clue (-> (random-clue)
+  (let [clue (-> (pick-clue game-id)
                  (select-keys [:lib-clue-id :category :airdate :question :answer :value])
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
