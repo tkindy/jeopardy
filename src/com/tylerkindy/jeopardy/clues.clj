@@ -43,12 +43,18 @@
                                 :category-id category-id
                                 :last-value -1})))
 
-(defn next-category-clue [{:keys [lib-clue-id]}]
-  (if lib-clue-id
-    (let [category-info (-> (clue-category-info ds {:clue-id lib-clue-id})
+(defn pick-next-category-clue [clue-id]
+  (if clue-id
+    (let [category-info (-> (clue-category-info ds {:clue-id clue-id})
                             (rename-keys {:value :last-value}))
           next-clue (get-next-category-clue ds category-info)]
       (if next-clue
         next-clue
         (pick-from-random-category)))
     (pick-from-random-category)))
+
+(defn next-category-clue [{:keys [lib-clue-id]}]
+  (loop [clue (pick-next-category-clue lib-clue-id)]
+    (if (valid-clue? clue)
+      (clean-clue clue)
+      (recur (pick-next-category-clue (:lib-clue-id clue))))))
