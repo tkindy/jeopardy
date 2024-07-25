@@ -37,8 +37,8 @@
   (first (random-clues 10)))
 
 (defn pick-from-random-category []
-  (let [category-id (get-random-category ds)
-        game-id (get-random-game-with-category ds {:category-id category-id})]
+  (let [{category-id :id} (get-random-category ds)
+        {:keys [game-id]} (get-random-game-with-category ds {:category-id category-id})]
     (get-next-category-clue ds {:game-id game-id
                                 :category-id category-id
                                 :last-value -1})))
