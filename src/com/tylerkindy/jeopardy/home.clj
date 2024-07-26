@@ -23,7 +23,7 @@
        [:input#endless-categories {:type :radio
                                    :name :mode
                                    :value :endless-categories}]
-       [:label {:for :endless} "Endless Categories"]
+       [:label {:for :endless-categories} "Endless Categories"]
        [:p {:style "margin-left: 2rem"}
         [:i "An infinite stream of random questions, organized by category"]]]]
      (anti-forgery-field)
