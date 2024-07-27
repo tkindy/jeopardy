@@ -93,8 +93,9 @@
                                 :grid-template-areas
                                 (grid-template-areas [[:category :players]
                                                       [:clue     :players]
+                                                      [:clue     :status]
                                                       [:button1  :button2]])
-                                :grid-template-rows "1fr 3fr 1fr"
+                                :grid-template-rows "1fr 2fr 1fr 1fr"
                                 :grid-template-columns "3fr 2fr"
                                 :max-width "1000px"
                                 :margin "1vh auto"
@@ -156,6 +157,11 @@
                       [:p {:color :white}]]
                      [:p {:margin 0
                           :color :black}]]]
+                   ["#status-card" {:grid-area :status
+                                    :display :flex
+                                    :justify-content :center
+                                    :align-items :center
+                                    :font-size "1.5rem"}]
                    ["#buttons" {:grid-column "button1 / button2"
                                 :display :grid
                                 :grid-template-areas (grid-template-areas [[:button1 :button2]])

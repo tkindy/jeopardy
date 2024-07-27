@@ -178,6 +178,9 @@
   [:div#players-card.card
    (player-cards game-id)])
 
+(defn status-view [game-id]
+  [:div#status-card.card "Answer!"])
+
 (defn buttons [game-id player-id]
   (let [state (get-in @live-games [game-id :state :name])]
     [:div#buttons
@@ -196,4 +199,5 @@
    (category-card-view game-id)
    (clue-card-view game-id)
    (players-view game-id)
+   (status-view game-id)
    (buttons game-id player-id)])
