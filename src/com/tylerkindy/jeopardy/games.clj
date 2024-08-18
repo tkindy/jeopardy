@@ -182,12 +182,18 @@
                                   :grid-template-rows "1fr"
                                   :align-items :stretch
                                   :justify-items :stretch}]
-                   ["#new-question-form" {:grid-column "button1 / button2"
+                   ["#new-question-form" {:grid-area "button1"
                                           :display :grid
                                           :grid-template-columns "1fr"
                                           :grid-template-rows "1fr"
                                           :align-items :stretch
-                                          :justify-items :stretch}])])
+                                          :justify-items :stretch}]
+                   ["#propose-correction-form" {:grid-area "button2"
+                                                :display :grid
+                                                :grid-template-columns "1fr"
+                                                :grid-template-rows "1fr"
+                                                :align-items :stretch
+                                                :justify-items :stretch}])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

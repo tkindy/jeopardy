@@ -88,6 +88,17 @@
                    [(players-view game-id)
                     [:div#buttons (new-question-form game-id player-id)]])))))
 
+(defn propose-correction [game-id player-id]
+  (when (transition! game-id
+                     (fn [{:keys [name]}] (= name :showing-answer))
+                     (fn [{{:keys [attempted]} :state}]
+                       {:name :proposing-correction
+                        :proposer player-id
+                        :attempted attempted}))
+    (send-all! game-id
+               (fn [player-id]
+                 (endless-container game-id player-id)))))
+
 (defn show-answer [game-id]
   (send-all! game-id
              (fn [player-id]
@@ -244,6 +255,7 @@
                     (update :type keyword))]
     (case (:type message)
       :new-clue  (vote-for-new-clue game-id player-id)
+      :propose-correction (propose-correction game-id player-id)
       :buzz-in   (buzz-in game-id player-id)
       :skip-clue (vote-to-skip game-id player-id)
       :answer    (check-answer game-id player-id message))))

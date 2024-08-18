@@ -77,6 +77,18 @@
    [:button {:disabled (if (can-vote-next? game-id player-id) false "")}
     "New question (n)"]])
 
+(defn can-propose-correction? [game-id player-id]
+  (-> @live-games
+      (get-in [game-id :state :name])
+      (not= :proposing-correction)))
+
+(defn propose-correction-form [game-id player-id]
+  [:form#propose-correction-form {:ws-send ""
+                                  :hx-trigger "click, keyup[key=='c'] from:body"}
+   [:input {:name :type, :value :propose-correction, :hidden ""}]
+   [:button {:disable (if (can-propose-correction? game-id player-id) false "")}
+    "Propose correction (c)"]])
+
 (defn can-skip? [game-id player-id]
   (let [{state :name
          buzzed-in-id :buzzed-in
@@ -179,20 +191,26 @@
    (player-cards game-id)])
 
 (defn status-view [game-id]
-  [:div#status-card.card "Answer!"])
+  (let [state (get-in @live-games [game-id :state])]
+    [:div#status-card.card
+     (condp = (:name state)
+       :proposing-correction "Proposing correction"
+       "Answer!")]))
 
 (defn buttons [game-id player-id]
   (let [state (get-in @live-games [game-id :state :name])]
     [:div#buttons
      (cond
-       (#{:drawing-clue :revealing-category :open-for-answers :answering}
+       (#{:drawing-clue :revealing-category :open-for-answers
+          :answering :proposing-correction}
         state)
        (list
         (buzzing-form game-id player-id)
         (skip-form game-id player-id))
 
        (#{:no-clue :showing-answer} state)
-       (new-question-form game-id player-id))]))
+       (list (new-question-form game-id player-id)
+             (propose-correction-form game-id player-id)))]))
 
 (defn endless-container [game-id player-id]
   [:div#endless
