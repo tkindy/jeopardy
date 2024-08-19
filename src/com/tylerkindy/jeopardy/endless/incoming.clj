@@ -160,7 +160,7 @@
     (doseq [guess (rest guesses)]
       (nullify-guess game-id guess (:value clue)))))
 
-(defn vote-for-correction [game-id player-id]
+(defn vote-on-correction [game-id player-id supports?]
   (when-let [live-game (transition!
                         game-id
                         (fn [{:keys [name proposer]}]
@@ -168,7 +168,7 @@
                                (not= proposer player-id)))
                         (fn [{{:keys [correction-votes] :as state} :state
                               :keys [players]}]
-                          (let [correction-votes (-> (assoc correction-votes player-id true)
+                          (let [correction-votes (-> (assoc correction-votes player-id supports?)
                                                      (select-keys (keys players)))]
                             (cond
                               (> (->> (vals correction-votes)
@@ -193,7 +193,11 @@
                (fn [player-id]
                  (endless-container game-id player-id)))))
 
-(defn vote-against-correction [game-id player-id])
+(defn vote-for-correction [game-id player-id]
+  (vote-on-correction game-id player-id true))
+
+(defn vote-against-correction [game-id player-id]
+  (vote-on-correction game-id player-id false))
 
 (defn show-answer [game-id]
   (send-all! game-id
