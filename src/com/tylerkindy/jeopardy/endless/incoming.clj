@@ -94,13 +94,15 @@
 (defn propose-correction [game-id player-id]
   (when (transition! game-id
                      (fn [{:keys [name]}] (= name :showing-answer))
-                     (fn [{{:keys [attempted]} :state}]
+                     (fn [{{:keys [attempted skip-votes]} :state}]
                        {:name :proposing-correction
                         :proposer player-id
-                        :attempted attempted}))
+                        :attempted attempted
+                        :skip-votes skip-votes}))
     (send-all! game-id
                (fn [player-id]
                  [(status-view game-id)
+                  (buttons game-id player-id)
                   (overlay game-id player-id)]))))
 
 (defn cancel-correction [game-id player-id]

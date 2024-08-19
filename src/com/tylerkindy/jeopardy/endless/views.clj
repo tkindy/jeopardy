@@ -146,11 +146,11 @@
 
 (defn clue-card-view [game-id]
   [:div#clue-card.card
-   (case (get-in @live-games [game-id :state :name])
-     :no-clue (no-clue-card)
-     :drawing-clue (drawing-card)
-     :revealing-category (countdown-card game-id)
-     :showing-answer (answer-card game-id)
+   (condp contains? (get-in @live-games [game-id :state :name])
+     #{:no-clue} (no-clue-card)
+     #{:drawing-clue} (drawing-card)
+     #{:revealing-category} (countdown-card game-id)
+     #{:showing-answer :proposing-correction} (answer-card game-id)
      (question-card game-id))])
 
 (defn player-card [live-game {:keys [id name score]}]
