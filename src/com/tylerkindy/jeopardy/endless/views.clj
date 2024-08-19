@@ -202,13 +202,13 @@
     [:div#buttons
      (cond
        (#{:drawing-clue :revealing-category :open-for-answers
-          :answering :proposing-correction}
+          :answering}
         state)
        (list
         (buzzing-form game-id player-id)
         (skip-form game-id player-id))
 
-       (#{:no-clue :showing-answer} state)
+       (#{:no-clue :showing-answer :proposing-correction} state)
        (list (new-question-form game-id player-id)
              (propose-correction-form game-id player-id)))]))
 
