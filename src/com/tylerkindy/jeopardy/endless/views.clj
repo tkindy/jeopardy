@@ -213,7 +213,9 @@
              (propose-correction-form game-id player-id)))]))
 
 (defn overlay-visible? [game-id player-id]
-  false)
+  (let [{:keys [name proposer]} (get-in @live-games [game-id :state])]
+    (and (= name :proposing-correction)
+         (= proposer player-id))))
 
 (defn overlay [game-id player-id]
   [:div#overlay-container

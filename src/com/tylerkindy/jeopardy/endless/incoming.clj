@@ -12,7 +12,7 @@
             [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view
                                                            category-reveal-time-left-view
                                                            endless-container new-question-form
-                                                           players-view status-view]]
+                                                           players-view status-view overlay]]
             [com.tylerkindy.jeopardy.clues :refer [random-clue next-category-clue]]
             [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.time :refer [now]]
@@ -100,7 +100,8 @@
                         :attempted attempted}))
     (send-all! game-id
                (fn [player-id]
-                 [(status-view game-id)]))))
+                 [(status-view game-id)
+                  (overlay game-id player-id)]))))
 
 (defn show-answer [game-id]
   (send-all! game-id
