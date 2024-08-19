@@ -204,7 +204,8 @@
                    ["#overlay" {:height "90vh"
                                 :margin "5vh auto"
                                 :max-width "800px"
-                                :display :grid}])])
+                                :display :grid
+                                :font-size "1.5rem"}])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 
