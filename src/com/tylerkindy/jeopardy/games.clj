@@ -205,7 +205,9 @@
                                 :margin "5vh auto"
                                 :max-width "800px"
                                 :display :grid
-                                :font-size "1.5rem"}])])
+                                :font-size "1.5rem"}]
+                   ["#propose-correction-menu" {}]
+                   ["#corrections-table" {:width "100%"}])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

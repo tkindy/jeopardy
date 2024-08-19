@@ -2,6 +2,7 @@
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [list-players]]
+            [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
   (:import [java.text NumberFormat]
            [java.time Duration]
@@ -218,6 +219,21 @@
     (and (= state :proposing-correction)
          (= proposer player-id))))
 
+(defn corrections-table [game-id]
+  (let [guesses (get-current-guesses ds {:game-id game-id})]
+    [:table#corrections-table
+     [:thead
+      [:tr
+       [:th "Player"]
+       [:th "Guess"]
+       [:th "Decision"]]]
+     [:tbody
+      (for [{:keys [guess player correct]} guesses]
+        [:tr
+         [:td player]
+         [:td guess]
+         [:td (if correct "Correct" "Incorrect")]])]]))
+
 (defn overlay [game-id player-id]
   [:div#overlay-container
    {:style (if (overlay-visible? game-id player-id)
@@ -226,7 +242,7 @@
    [:div#overlay
     [:div#propose-correction-menu.card
      [:h3 "Propose Correction"]
-     [:p "Build this!"]]]])
+     (corrections-table game-id)]]])
 
 (defn endless-container [game-id player-id]
   [:div#endless
