@@ -224,7 +224,8 @@
              "display: none")}
    [:div#overlay
     [:div#propose-correction-menu.card
-     [:p "Test overlay"]]]])
+     [:h3 "Propose Correction"]
+     [:p "Build this!"]]]])
 
 (defn endless-container [game-id player-id]
   [:div#endless
