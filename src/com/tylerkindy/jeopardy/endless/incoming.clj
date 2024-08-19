@@ -120,6 +120,24 @@
                   (buttons game-id player-id)
                   (overlay game-id player-id)]))))
 
+(defn pick-correction [game-id player-id {:keys [guess-id]}]
+  (let [guess-id (Integer/parseInt guess-id)]
+    (when (transition! game-id
+                       (fn [{:keys [name proposer]}]
+                         (and (= name :proposing-correction)
+                              (= proposer player-id)))
+                       (fn [{{:keys [proposer attempted skip-votes]} :state}]
+                         {:name :correction-proposed
+                          :proposer proposer
+                          :guess guess-id
+                          :attempted attempted
+                          :skip-votes skip-votes
+                          :correction-votes {}}))
+      (send-all! game-id
+                 (fn [player-id]
+                   [(status-view game-id)
+                    (overlay game-id player-id)])))))
+
 (defn show-answer [game-id]
   (send-all! game-id
              (fn [player-id]
@@ -278,6 +296,7 @@
       :new-clue  (vote-for-new-clue game-id player-id)
       :propose-correction (propose-correction game-id player-id)
       :cancel-correction (cancel-correction game-id player-id)
+      :pick-correction (pick-correction game-id player-id message)
       :buzz-in   (buzz-in game-id player-id)
       :skip-clue (vote-to-skip game-id player-id)
       :answer    (check-answer game-id player-id message))))

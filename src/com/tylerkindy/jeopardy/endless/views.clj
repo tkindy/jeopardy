@@ -228,11 +228,16 @@
        [:th "Guess"]
        [:th "Decision"]]]
      [:tbody
-      (for [{:keys [guess player correct]} guesses]
+      (for [{:keys [id guess player correct]} guesses]
         [:tr
          [:td player]
          [:td guess]
-         [:td (if correct "Correct" "Incorrect")]])]]))
+         [:td (if correct "Correct" "Incorrect")]
+         [:td
+          [:form {:ws-send ""}
+           [:input {:name :type, :value :pick-correction, :hidden ""}]
+           [:input {:name :guess-id, :value id, :hidden ""}]
+           [:button "Select"]]]])]]))
 
 (defn overlay [game-id player-id]
   [:div#overlay-container
