@@ -7,7 +7,8 @@ SELECT
   g.id,
   g.guess,
   p.name as player,
-  g.correct
+  g.correct,
+  g.overridden
 FROM guesses AS g
 JOIN players AS p ON g.player_id = p.id
 WHERE g.clue_id = (
@@ -17,3 +18,8 @@ WHERE g.clue_id = (
   LIMIT 1
 )
 ORDER BY g.id;
+
+-- :name override-guess :! :n
+UPDATE guesses
+SET overridden = TRUE
+WHERE id = :id;

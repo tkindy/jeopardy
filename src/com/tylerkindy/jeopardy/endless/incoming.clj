@@ -6,7 +6,7 @@
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.games :refer [get-game]]
-            [com.tylerkindy.jeopardy.db.guesses :refer [insert-guess]]
+            [com.tylerkindy.jeopardy.db.guesses :refer [insert-guess get-current-guesses override-guess]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view
@@ -16,7 +16,8 @@
             [com.tylerkindy.jeopardy.clues :refer [random-clue next-category-clue]]
             [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.time :refer [now]]
-            [hiccup.util :refer [escape-html]])
+            [hiccup.util :refer [escape-html]]
+            [next.jdbc :as jdbc])
   (:import [java.util Timer TimerTask]))
 
 (defn should-show-answer? [players attempted skip-votes]
@@ -137,6 +138,62 @@
                  (fn [player-id]
                    [(status-view game-id)
                     (overlay game-id player-id)])))))
+
+(defn fix-guess [game-id guess value]
+  (let [{:keys [id player-id correct]} guess
+        {:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
+    (jdbc/with-transaction [tx ds]
+      (update-score tx {:id player-id, :score ((if correct - +) score value)})
+      (override-guess tx {:id id}))))
+
+(defn reverse-guess [game-id guess clue-value]
+  (fix-guess game-id guess (* clue-value 2)))
+
+(defn nullify-guess [game-id guess clue-value]
+  (fix-guess game-id guess clue-value))
+
+(defn apply-correction [game-id guess-id]
+  (let [clue (get-current-clue ds {:game-id game-id})
+        guesses (->> (get-current-guesses ds {:game-id game-id})
+                     (drop-while (fn [{:keys [id]}] (< id guess-id))))]
+    (reverse-guess game-id (first guesses) (:value clue))
+    (doseq [guess (rest guesses)]
+      (nullify-guess game-id guess (:value clue)))))
+
+(defn vote-for-correction [game-id player-id]
+  (when-let [live-game (transition!
+                        game-id
+                        (fn [{:keys [name proposer]}]
+                          (and (= name :correction-proposed)
+                               (not= proposer player-id)))
+                        (fn [{{:keys [correction-votes] :as state} :state
+                              :keys [players]}]
+                          (let [correction-votes (-> (assoc correction-votes player-id true)
+                                                     (select-keys (keys players)))]
+                            (cond
+                              (> (->> (vals correction-votes)
+                                      (filter identity)
+                                      count)
+                                 (/ (count players) 2))
+                              (-> state
+                                  (select-keys [:guess :attempted :skip-votes])
+                                  (assoc :name :applying-correction))
+
+                              (= (count correction-votes) (count players))
+                              (-> state
+                                  (select-keys [:attempted :skip-votes])
+                                  (assoc :name :showing-answer)
+                                  (assoc :new-clue-votes #{}))
+
+                              :else (assoc state :correction-votes correction-votes)))))]
+    (when (= (get-in live-game [:state :name]) :applying-correction)
+      (apply-correction game-id (get-in live-game [:state :guess])))
+
+    (send-all! game-id
+               (fn [player-id]
+                 (endless-container game-id player-id)))))
+
+(defn vote-against-correction [game-id player-id])
 
 (defn show-answer [game-id]
   (send-all! game-id
@@ -297,6 +354,8 @@
       :propose-correction (propose-correction game-id player-id)
       :cancel-correction (cancel-correction game-id player-id)
       :pick-correction (pick-correction game-id player-id message)
+      :vote-for-correction (vote-for-correction game-id player-id)
+      :vote-against-correction (vote-against-correction game-id player-id)
       :buzz-in   (buzz-in game-id player-id)
       :skip-clue (vote-to-skip game-id player-id)
       :answer    (check-answer game-id player-id message))))
