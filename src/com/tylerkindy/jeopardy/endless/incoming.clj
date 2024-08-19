@@ -89,7 +89,7 @@
       (send-all! game-id
                  (fn [player-id]
                    [(players-view game-id)
-                    [:div#buttons (new-question-form game-id player-id)]])))))
+                    (buttons game-id player-id)])))))
 
 (defn propose-correction [game-id player-id]
   (when (transition! game-id
@@ -108,7 +108,7 @@
              (fn [player-id]
                [(answer-card game-id)
                 (players-view game-id)
-                [:div#buttons (new-question-form game-id player-id)]])))
+                (buttons game-id player-id)])))
 
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
