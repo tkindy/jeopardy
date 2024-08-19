@@ -213,9 +213,11 @@
              (propose-correction-form game-id player-id)))]))
 
 (defn overlay [game-id player-id]
-  [:div#overlay
-   {:style "display: none"}
-   "Test overlay"])
+  [:div#overlay-container
+  ;;  {:style "display: none"}
+   [:div#overlay
+    [:div#propose-correction-menu.card
+     [:p "Test overlay"]]]])
 
 (defn endless-container [game-id player-id]
   [:div#endless
