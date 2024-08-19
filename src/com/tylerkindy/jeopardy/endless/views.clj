@@ -242,7 +242,10 @@
    [:div#overlay
     [:div#propose-correction-menu.card
      [:h3 "Propose Correction"]
-     (corrections-table game-id)]]])
+     (corrections-table game-id)
+     [:form {:ws-send ""}
+      [:input {:name :type, :value :cancel-correction, :hidden ""}]
+      [:button "Cancel"]]]]])
 
 (defn endless-container [game-id player-id]
   [:div#endless

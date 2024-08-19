@@ -103,6 +103,21 @@
                  [(status-view game-id)
                   (overlay game-id player-id)]))))
 
+(defn cancel-correction [game-id player-id]
+  (when (transition! game-id
+                     (fn [{:keys [name proposer]}]
+                       (and (= name :proposing-correction)
+                            (= proposer player-id)))
+                     (fn [{{:keys [attempted skip-votes]} :state}]
+                       {:name :showing-answer
+                        :attempted attempted
+                        :skip-votes skip-votes}))
+    (send-all! game-id
+               (fn [player-id]
+                 [(status-view game-id)
+                  (buttons game-id player-id)
+                  (overlay game-id player-id)]))))
+
 (defn show-answer [game-id]
   (send-all! game-id
              (fn [player-id]
@@ -260,6 +275,7 @@
     (case (:type message)
       :new-clue  (vote-for-new-clue game-id player-id)
       :propose-correction (propose-correction game-id player-id)
+      :cancel-correction (cancel-correction game-id player-id)
       :buzz-in   (buzz-in game-id player-id)
       :skip-clue (vote-to-skip game-id player-id)
       :answer    (check-answer game-id player-id message))))
