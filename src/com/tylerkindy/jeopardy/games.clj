@@ -193,7 +193,14 @@
                                                 :grid-template-columns "1fr"
                                                 :grid-template-rows "1fr"
                                                 :align-items :stretch
-                                                :justify-items :stretch}])])
+                                                :justify-items :stretch}]
+                   ["#overlay" {:position :fixed
+                                :width "100%"
+                                :height "100%"
+                                :top 0
+                                :left 0
+                                :background-color "rgba(0,0,0,0.5)"
+                                :z-index 2}])])
      [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
       (endless-container game-id player-id)
 

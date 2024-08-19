@@ -212,10 +212,16 @@
        (list (new-question-form game-id player-id)
              (propose-correction-form game-id player-id)))]))
 
+(defn overlay [game-id player-id]
+  [:div#overlay
+   {:style "display: none"}
+   "Test overlay"])
+
 (defn endless-container [game-id player-id]
   [:div#endless
    (category-card-view game-id)
    (clue-card-view game-id)
    (players-view game-id)
    (status-view game-id)
-   (buttons game-id player-id)])
+   (buttons game-id player-id)
+   (overlay game-id player-id)])
