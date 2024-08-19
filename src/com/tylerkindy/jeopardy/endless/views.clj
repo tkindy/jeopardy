@@ -212,9 +212,14 @@
        (list (new-question-form game-id player-id)
              (propose-correction-form game-id player-id)))]))
 
+(defn overlay-visible? [game-id player-id]
+  false)
+
 (defn overlay [game-id player-id]
   [:div#overlay-container
-   {:style "display: none"}
+   {:style (if (overlay-visible? game-id player-id)
+             ""
+             "display: none")}
    [:div#overlay
     [:div#propose-correction-menu.card
      [:p "Test overlay"]]]])
