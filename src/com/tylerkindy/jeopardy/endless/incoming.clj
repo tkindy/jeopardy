@@ -9,7 +9,10 @@
             [com.tylerkindy.jeopardy.db.guesses :refer [insert-guess]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player update-score]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
-            [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view category-reveal-time-left-view endless-container new-question-form players-view]]
+            [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view
+                                                           category-reveal-time-left-view
+                                                           endless-container new-question-form
+                                                           players-view status-view]]
             [com.tylerkindy.jeopardy.clues :refer [random-clue next-category-clue]]
             [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.time :refer [now]]
@@ -97,7 +100,7 @@
                         :attempted attempted}))
     (send-all! game-id
                (fn [player-id]
-                 (endless-container game-id player-id)))))
+                 [(status-view game-id)]))))
 
 (defn show-answer [game-id]
   (send-all! game-id
