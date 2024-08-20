@@ -78,6 +78,18 @@
    [:button {:disabled (if (can-vote-next? game-id player-id) false "")}
     "New question (n)"]])
 
+(defn vote-for-correction-form [game-id player-id]
+  [:form#vote-for-correction-form {:ws-send ""
+                                   :hx-trigger "click, keyup[key=='y'] from:body"}
+   [:input {:name :type, :value :vote-for-correction, :hidden ""}]
+   [:button "Yes (y)"]])
+
+(defn vote-against-correction-form [game-id player-id]
+  [:form#vote-against-correction-form {:ws-send ""
+                                       :hx-trigger "click, keyup[key=='n'] from:body"}
+   [:input {:name :type, :value :vote-against-correction, :hidden ""}]
+   [:button "No (n)"]])
+
 (defn can-propose-correction? [game-id player-id]
   (-> @live-games
       (get-in [game-id :state :name])
@@ -211,7 +223,11 @@
 
        (#{:no-clue :showing-answer :proposing-correction} state)
        (list (new-question-form game-id player-id)
-             (propose-correction-form game-id player-id)))]))
+             (propose-correction-form game-id player-id))
+
+       (= :correction-proposed state)
+       (list (vote-for-correction-form game-id player-id)
+             (vote-against-correction-form game-id player-id)))]))
 
 (defn overlay-visible? [game-id player-id]
   (let [{state :name, :keys [proposer]}

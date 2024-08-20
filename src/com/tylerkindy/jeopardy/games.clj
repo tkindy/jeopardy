@@ -196,6 +196,18 @@
                                                 :grid-template-rows "1fr"
                                                 :align-items :stretch
                                                 :justify-items :stretch}]
+                   ["#vote-for-correction-form" {:grid-area "button1"
+                                                 :display :grid
+                                                 :grid-template-columns "1fr"
+                                                 :grid-template-rows "1fr"
+                                                 :align-items :stretch
+                                                 :justify-items :stretch}]
+                   ["#vote-against-correction-form" {:grid-area "button2"
+                                                     :display :grid
+                                                     :grid-template-columns "1fr"
+                                                     :grid-template-rows "1fr"
+                                                     :align-items :stretch
+                                                     :justify-items :stretch}]
                    ["#overlay-container" {:position :fixed
                                           :width "100%"
                                           :height "100%"
