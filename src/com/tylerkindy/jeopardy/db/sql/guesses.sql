@@ -2,6 +2,14 @@
 INSERT INTO guesses (clue_id, player_id, guess, correct, guessed_at)
 VALUES (:clue-id, :player-id, :guess, :correct, :guessed-at);
 
+-- :name get-guess :? :1
+SELECT
+  p.name as player,
+  g.correct
+FROM guesses AS g
+JOIN players AS p ON g.player_id = p.id
+WHERE g.id = :id;
+
 -- :name get-current-guesses :?
 SELECT
   g.id,

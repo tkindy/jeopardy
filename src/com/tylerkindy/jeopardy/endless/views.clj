@@ -2,7 +2,7 @@
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [list-players]]
-            [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses]]
+            [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses get-guess]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
   (:import [java.text NumberFormat]
            [java.time Duration]
@@ -208,14 +208,24 @@
     [:div#status-card.card
      (condp = (:name state)
        :proposing-correction "Proposing correction"
-       :correction-proposed (let [[yes no]
-                                  (reduce (fn [[yes no] vote]
-                                            (if vote
-                                              [(inc yes) no]
-                                              [yes (inc no)]))
-                                          [0 0]
-                                          (vals (:correction-votes state)))]
-                              (str yes " Yes | " no " No"))
+       :correction-proposed (let [players (->> (list-players ds {:game-id game-id})
+                                               (map (fn [player] [(:id player) player]))
+                                               (into {}))
+                                  proposer (-> state
+                                               :proposer
+                                               players
+                                               :name)
+                                  {guesser :player
+                                   :keys [correct]} (get-guess ds {:id (:guess state)})
+
+                                  [yes no] (reduce (fn [[yes no] vote]
+                                                     (if vote
+                                                       [(inc yes) no]
+                                                       [yes (inc no)]))
+                                                   [0 0]
+                                                   (vals (:correction-votes state)))]
+                              (list [:p (str proposer " thinks " guesser " was " (if correct "wrong" "right"))]
+                                    [:p (str yes " Yes | " no " No")]))
        "Answer!")]))
 
 (defn buttons [game-id player-id]
