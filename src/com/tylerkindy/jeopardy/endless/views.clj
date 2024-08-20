@@ -2,6 +2,7 @@
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [list-players]]
+            [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses get-guess]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
   (:import [java.text NumberFormat]
            [java.time Duration]
@@ -77,6 +78,30 @@
    [:button {:disabled (if (can-vote-next? game-id player-id) false "")}
     "New question (n)"]])
 
+(defn vote-for-correction-form [game-id player-id]
+  [:form#vote-for-correction-form {:ws-send ""
+                                   :hx-trigger "click, keyup[key=='y'] from:body"}
+   [:input {:name :type, :value :vote-for-correction, :hidden ""}]
+   [:button "Yes (y)"]])
+
+(defn vote-against-correction-form [game-id player-id]
+  [:form#vote-against-correction-form {:ws-send ""
+                                       :hx-trigger "click, keyup[key=='n'] from:body"}
+   [:input {:name :type, :value :vote-against-correction, :hidden ""}]
+   [:button "No (n)"]])
+
+(defn can-propose-correction? [game-id player-id]
+  (-> @live-games
+      (get-in [game-id :state :name])
+      (not= :proposing-correction)))
+
+(defn propose-correction-form [game-id player-id]
+  [:form#propose-correction-form {:ws-send ""
+                                  :hx-trigger "click, keyup[key=='c'] from:body"}
+   [:input {:name :type, :value :propose-correction, :hidden ""}]
+   [:button {:disable (if (can-propose-correction? game-id player-id) false "")}
+    "Propose correction (c)"]])
+
 (defn can-skip? [game-id player-id]
   (let [{state :name
          buzzed-in-id :buzzed-in
@@ -133,11 +158,11 @@
 
 (defn clue-card-view [game-id]
   [:div#clue-card.card
-   (case (get-in @live-games [game-id :state :name])
-     :no-clue (no-clue-card)
-     :drawing-clue (drawing-card)
-     :revealing-category (countdown-card game-id)
-     :showing-answer (answer-card game-id)
+   (condp contains? (get-in @live-games [game-id :state :name])
+     #{:no-clue} (no-clue-card)
+     #{:drawing-clue} (drawing-card)
+     #{:revealing-category} (countdown-card game-id)
+     #{:showing-answer :proposing-correction} (answer-card game-id)
      (question-card game-id))])
 
 (defn player-card [live-game {:keys [id name score]}]
@@ -178,22 +203,95 @@
   [:div#players-card.card
    (player-cards game-id)])
 
+(defn status-view [game-id]
+  (let [state (get-in @live-games [game-id :state])]
+    [:div#status-card.card
+     (condp = (:name state)
+       :proposing-correction "Proposing correction"
+       :correction-proposed (let [players (->> (list-players ds {:game-id game-id})
+                                               (map (fn [player] [(:id player) player]))
+                                               (into {}))
+                                  proposer (-> state
+                                               :proposer
+                                               players
+                                               :name)
+                                  {guesser :player
+                                   :keys [correct]} (get-guess ds {:id (:guess state)})
+
+                                  [yes no] (reduce (fn [[yes no] vote]
+                                                     (if vote
+                                                       [(inc yes) no]
+                                                       [yes (inc no)]))
+                                                   [0 0]
+                                                   (vals (:correction-votes state)))]
+                              (list [:p (str proposer " thinks " guesser " was " (if correct "wrong" "right"))]
+                                    [:p (str yes " Yes | " no " No")]))
+       [:p "Answer!"])]))
+
 (defn buttons [game-id player-id]
   (let [state (get-in @live-games [game-id :state :name])]
     [:div#buttons
      (cond
-       (#{:drawing-clue :revealing-category :open-for-answers :answering}
+       (#{:drawing-clue :revealing-category :open-for-answers
+          :answering}
         state)
        (list
         (buzzing-form game-id player-id)
         (skip-form game-id player-id))
 
-       (#{:no-clue :showing-answer} state)
-       (new-question-form game-id player-id))]))
+       (#{:no-clue :showing-answer :proposing-correction} state)
+       (list (new-question-form game-id player-id)
+             (propose-correction-form game-id player-id))
+
+       ; TODO: disable buttons when someone has already voted
+       (= :correction-proposed state)
+       (list (vote-for-correction-form game-id player-id)
+             (vote-against-correction-form game-id player-id)))]))
+
+(defn overlay-visible? [game-id player-id]
+  (let [{state :name, :keys [proposer]}
+        (get-in @live-games [game-id :state])]
+    (and (= state :proposing-correction)
+         (= proposer player-id))))
+
+(defn corrections-table [game-id]
+  (let [guesses (get-current-guesses ds {:game-id game-id})]
+    [:table#corrections-table
+     [:thead
+      [:tr
+       [:th "Player"]
+       [:th "Guess"]
+       [:th "Decision"]]]
+     [:tbody
+      (for [{:keys [id guess player correct]} guesses]
+        [:tr
+         [:td player]
+         [:td guess]
+         [:td (if correct "Correct" "Incorrect")]
+         [:td
+          [:form {:ws-send ""}
+           [:input {:name :type, :value :pick-correction, :hidden ""}]
+           [:input {:name :guess-id, :value id, :hidden ""}]
+           [:button "Select"]]]])]]))
+
+(defn overlay [game-id player-id]
+  [:div#overlay-container
+   {:style (if (overlay-visible? game-id player-id)
+             ""
+             "display: none")}
+   [:div#overlay
+    [:div#propose-correction-menu.card
+     [:h3 "Propose Correction"]
+     (corrections-table game-id)
+     [:form {:ws-send ""}
+      [:input {:name :type, :value :cancel-correction, :hidden ""}]
+      [:button "Cancel"]]]]])
 
 (defn endless-container [game-id player-id]
   [:div#endless
    (category-card-view game-id)
    (clue-card-view game-id)
    (players-view game-id)
-   (buttons game-id player-id)])
+   (status-view game-id)
+   (buttons game-id player-id)
+   (overlay game-id player-id)])

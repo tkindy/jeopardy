@@ -2,16 +2,23 @@
   (:require [clojure.string :as str]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
+            [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses]]
             [hiccup.core :refer [html]]
             [org.httpkit.server :refer [send!]]))
 
 (defonce live-games (atom {}))
 
 (defn derive-state [game-id]
-  (let [clue (get-current-clue ds {:game-id game-id})]
+  (let [clue (get-current-clue ds {:game-id game-id})
+        guesses (get-current-guesses ds {:game-id game-id})]
     (cond
       (not clue)       {:name :no-clue}
-      (:answered clue) {:name :showing-answer}
+      (:answered clue) {:name :showing-answer
+                        :attempted (reduce (fn [attempted {:keys [player-id guess correct]}]
+                                             (assoc attempted player-id {:guess guess
+                                                                         :correct? correct}))
+                                           {}
+                                           guesses)}
       :else            {:name :open-for-answers
                         :attempted {}})))
 

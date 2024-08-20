@@ -1,0 +1,2 @@
+ALTER TABLE guesses
+ADD COLUMN overridden boolean NOT NULL DEFAULT FALSE;

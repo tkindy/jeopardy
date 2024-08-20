@@ -1,5 +1,6 @@
 (ns com.tylerkindy.jeopardy.games
   (:require [com.tylerkindy.jeopardy.common :refer [scripts page]]
+            [com.tylerkindy.jeopardy.config :refer [config]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
@@ -7,6 +8,7 @@
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container]]
             [com.tylerkindy.jeopardy.mode :as mode]
+            [com.tylerkindy.jeopardy.player-id :refer [get-player-id]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [com.tylerkindy.jeopardy.time :refer [now]]
             [compojure.core :refer [defroutes context POST GET]]
@@ -44,6 +46,7 @@
              (fn [player-id]
                (endless-container game-id player-id))))
 
+; TODO: move out of :proposing-correction when proposer disconnects
 (defn disconnect-player [game-id player-id]
   (swap! live-games
          (fn [live-games]
@@ -59,7 +62,7 @@
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
-        {player-id :id} (:session req)]
+        player-id (get-player-id req)]
     (if player-id
       (as-channel req
                   {:on-open (fn [ch] (connect-player game-id player-id ch))
@@ -81,7 +84,7 @@
        (str/join "\n")))
 
 (defn endless-logged-in-page [{game-id :id} req]
-  (let [player-id (get-in req [:session :id])]
+  (let [player-id (get-player-id req)]
     (page
      (list
       [:style (css {:pretty-print? false}
@@ -93,8 +96,9 @@
                                 :grid-template-areas
                                 (grid-template-areas [[:category :players]
                                                       [:clue     :players]
+                                                      [:clue     :status]
                                                       [:button1  :button2]])
-                                :grid-template-rows "1fr 3fr 1fr"
+                                :grid-template-rows "1fr 2fr 1fr 1fr"
                                 :grid-template-columns "3fr 2fr"
                                 :max-width "1000px"
                                 :margin "1vh auto"
@@ -156,6 +160,13 @@
                       [:p {:color :white}]]
                      [:p {:margin 0
                           :color :black}]]]
+                   ["#status-card" {:grid-area :status
+                                    :display :grid
+                                    :grid-template-columns "1fr"
+                                    :grid-template-rows "1fr 1fr"
+                                    :align-items :stretch
+                                    :justify-items :stretch
+                                    :font-size "1.5rem"}]
                    ["#buttons" {:grid-column "button1 / button2"
                                 :display :grid
                                 :grid-template-areas (grid-template-areas [[:button1 :button2]])
@@ -176,13 +187,49 @@
                                   :grid-template-rows "1fr"
                                   :align-items :stretch
                                   :justify-items :stretch}]
-                   ["#new-question-form" {:grid-column "button1 / button2"
+                   ["#new-question-form" {:grid-area "button1"
                                           :display :grid
                                           :grid-template-columns "1fr"
                                           :grid-template-rows "1fr"
                                           :align-items :stretch
-                                          :justify-items :stretch}])])
-     [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
+                                          :justify-items :stretch}]
+                   ["#propose-correction-form" {:grid-area "button2"
+                                                :display :grid
+                                                :grid-template-columns "1fr"
+                                                :grid-template-rows "1fr"
+                                                :align-items :stretch
+                                                :justify-items :stretch}]
+                   ["#vote-for-correction-form" {:grid-area "button1"
+                                                 :display :grid
+                                                 :grid-template-columns "1fr"
+                                                 :grid-template-rows "1fr"
+                                                 :align-items :stretch
+                                                 :justify-items :stretch}]
+                   ["#vote-against-correction-form" {:grid-area "button2"
+                                                     :display :grid
+                                                     :grid-template-columns "1fr"
+                                                     :grid-template-rows "1fr"
+                                                     :align-items :stretch
+                                                     :justify-items :stretch}]
+                   ["#overlay-container" {:position :fixed
+                                          :width "100%"
+                                          :height "100%"
+                                          :top 0
+                                          :left 0
+                                          :background-color "rgba(0,0,0,0.5)"
+                                          :z-index 2}]
+                   ["#overlay" {:height "90vh"
+                                :margin "5vh auto"
+                                :max-width "800px"
+                                :display :grid
+                                :font-size "1.5rem"}]
+                   ["#propose-correction-menu" {}]
+                   ["#corrections-table" {:width "100%"}])])
+     [:body {:hx-ext "ws,morph"
+             :ws-connect (let [url (str "/games/" game-id)]
+                           (if (= (:player-id-spot config) :query-param)
+                             (str url "?playerId=" player-id)
+                             url))}
       (endless-container game-id player-id)
 
       scripts])))
@@ -210,7 +257,7 @@
    :body (endless-anon-page game)})
 
 (defn endless-response [game req]
-  (let [player-id (get-in req [:session :id])]
+  (let [player-id (get-player-id req)]
     (if (get-player ds {:id player-id, :game-id (:id game)})
       (endless-logged-in game req)
       (endless-anon game))))
