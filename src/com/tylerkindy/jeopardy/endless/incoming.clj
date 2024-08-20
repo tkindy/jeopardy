@@ -173,10 +173,18 @@
            (fn [live-games]
              (update-in live-games
                         [game-id :state]
-                        (fn [state]
-                          (-> state
-                              (select-keys [:attempted :skip-votes])
-                              (assoc :name :showing-answer))))))))
+                        (fn [{:keys [attempted] :as state}]
+                          (let [attempted (update-in attempted
+                                                     [(:player-id (first guesses)) :correct?]
+                                                     not)
+                                attempted (reduce (fn [attempted guess]
+                                                    (dissoc attempted (:player-id guess)))
+                                                  attempted
+                                                  (rest guesses))]
+                            (-> state
+                                (select-keys [:skip-votes])
+                                (assoc :name :showing-answer)
+                                (assoc :attempted attempted)))))))))
 
 (defn vote-on-correction [game-id player-id supports?]
   (when-let [live-game (transition!
