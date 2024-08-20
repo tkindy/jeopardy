@@ -137,7 +137,8 @@
       (send-all! game-id
                  (fn [player-id]
                    [(status-view game-id)
-                    (overlay game-id player-id)])))))
+                    (overlay game-id player-id)
+                    (buttons game-id player-id)])))))
 
 (defn fix-guess [game-id guess value]
   (let [{:keys [id player-id correct]} guess
@@ -158,7 +159,16 @@
                      (drop-while (fn [{:keys [id]}] (< id guess-id))))]
     (reverse-guess game-id (first guesses) (:value clue))
     (doseq [guess (rest guesses)]
-      (nullify-guess game-id guess (:value clue)))))
+      (nullify-guess game-id guess (:value clue)))
+
+    (swap! live-games
+           (fn [live-games]
+             (update-in live-games
+                        [game-id :state]
+                        (fn [state]
+                          (-> state
+                              (select-keys [:attempted :skip-votes])
+                              (assoc :name :showing-answer))))))))
 
 (defn vote-on-correction [game-id player-id supports?]
   (when-let [live-game (transition!
