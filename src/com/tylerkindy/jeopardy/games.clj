@@ -1,5 +1,6 @@
 (ns com.tylerkindy.jeopardy.games
   (:require [com.tylerkindy.jeopardy.common :refer [scripts page]]
+            [com.tylerkindy.jeopardy.config :refer [config]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.games :refer [insert-game get-game]]
             [com.tylerkindy.jeopardy.db.players :refer [get-player]]
@@ -7,6 +8,7 @@
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! setup-game-state!]]
             [com.tylerkindy.jeopardy.endless.views :refer [endless-container]]
             [com.tylerkindy.jeopardy.mode :as mode]
+            [com.tylerkindy.jeopardy.player-id :refer [get-player-id]]
             [com.tylerkindy.jeopardy.players :refer [player-routes]]
             [com.tylerkindy.jeopardy.time :refer [now]]
             [compojure.core :refer [defroutes context POST GET]]
@@ -59,7 +61,7 @@
 
 (defn game-websocket [req]
   (let [{:keys [game-id]} (:params req)
-        {player-id :id} (:session req)]
+        player-id (get-player-id req)]
     (if player-id
       (as-channel req
                   {:on-open (fn [ch] (connect-player game-id player-id ch))
@@ -81,7 +83,7 @@
        (str/join "\n")))
 
 (defn endless-logged-in-page [{game-id :id} req]
-  (let [player-id (get-in req [:session :id])]
+  (let [player-id (get-player-id req)]
     (page
      (list
       [:style (css {:pretty-print? false}
@@ -208,7 +210,11 @@
                                 :font-size "1.5rem"}]
                    ["#propose-correction-menu" {}]
                    ["#corrections-table" {:width "100%"}])])
-     [:body {:hx-ext "ws,morph", :ws-connect (str "/games/" game-id)}
+     [:body {:hx-ext "ws,morph"
+             :ws-connect (let [url (str "/games/" game-id)]
+                           (if (= (:player-id-spot config) :query-param)
+                             (str url "?playerId=" player-id)
+                             url))}
       (endless-container game-id player-id)
 
       scripts])))
@@ -236,7 +242,7 @@
    :body (endless-anon-page game)})
 
 (defn endless-response [game req]
-  (let [player-id (get-in req [:session :id])]
+  (let [player-id (get-player-id req)]
     (if (get-player ds {:id player-id, :game-id (:id game)})
       (endless-logged-in game req)
       (endless-anon game))))
