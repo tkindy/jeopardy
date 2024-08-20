@@ -140,6 +140,13 @@
                     (overlay game-id player-id)
                     (buttons game-id player-id)])))))
 
+(defn show-answer [game-id]
+  (send-all! game-id
+             (fn [player-id]
+               [(answer-card game-id)
+                (players-view game-id)
+                (buttons game-id player-id)])))
+
 (defn fix-guess [game-id guess value]
   (let [{:keys [id player-id correct]} guess
         {:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
@@ -202,22 +209,13 @@
     (when (= (get-in live-game [:state :name]) :applying-correction)
       (apply-correction game-id (get-in live-game [:state :guess])))
 
-    (send-all! game-id
-               (fn [player-id]
-                 (endless-container game-id player-id)))))
+    (show-answer game-id)))
 
 (defn vote-for-correction [game-id player-id]
   (vote-on-correction game-id player-id true))
 
 (defn vote-against-correction [game-id player-id]
   (vote-on-correction game-id player-id false))
-
-(defn show-answer [game-id]
-  (send-all! game-id
-             (fn [player-id]
-               [(answer-card game-id)
-                (players-view game-id)
-                (buttons game-id player-id)])))
 
 (defn right-answer [game-id player-id value]
   (let [{:keys [score]} (get-player ds {:id player-id, :game-id game-id})]
