@@ -208,6 +208,14 @@
     [:div#status-card.card
      (condp = (:name state)
        :proposing-correction "Proposing correction"
+       :correction-proposed (let [[yes no]
+                                  (reduce (fn [[yes no] vote]
+                                            (if vote
+                                              [(inc yes) no]
+                                              [yes (inc no)]))
+                                          [0 0]
+                                          (vals (:correction-votes state)))]
+                              (str yes " Yes | " no " No"))
        "Answer!")]))
 
 (defn buttons [game-id player-id]

@@ -145,6 +145,7 @@
              (fn [player-id]
                [(answer-card game-id)
                 (players-view game-id)
+                (status-view game-id)
                 (buttons game-id player-id)])))
 
 (defn fix-guess [game-id guess value]
