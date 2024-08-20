@@ -103,7 +103,8 @@
                         :skip-votes skip-votes}))
     (send-all! game-id
                (fn [player-id]
-                 [(status-view game-id)
+                 [(players-view game-id)
+                  (status-view game-id)
                   (buttons game-id player-id)
                   (overlay game-id player-id)]))))
 
