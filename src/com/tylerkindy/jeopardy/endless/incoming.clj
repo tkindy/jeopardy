@@ -179,7 +179,10 @@
                                   (select-keys [:guess :attempted :skip-votes])
                                   (assoc :name :applying-correction))
 
-                              (= (count correction-votes) (count players))
+                              (>= (->> (vals correction-votes)
+                                       (filter not)
+                                       count)
+                                  (/ (count players) 2))
                               (-> state
                                   (select-keys [:attempted :skip-votes])
                                   (assoc :name :showing-answer)
