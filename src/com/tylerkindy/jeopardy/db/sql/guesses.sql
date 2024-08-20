@@ -6,6 +6,7 @@ VALUES (:clue-id, :player-id, :guess, :correct, :guessed-at);
 SELECT
   g.id,
   g.guess,
+  p.id as player_id,
   p.name as player,
   g.correct,
   g.overridden
