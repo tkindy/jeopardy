@@ -133,7 +133,7 @@
                           :guess guess-id
                           :attempted attempted
                           :skip-votes skip-votes
-                          :correction-votes {}}))
+                          :correction-votes {player-id true}}))
       (send-all! game-id
                  (fn [player-id]
                    [(status-view game-id)
