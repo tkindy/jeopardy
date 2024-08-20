@@ -243,6 +243,7 @@
        (list (new-question-form game-id player-id)
              (propose-correction-form game-id player-id))
 
+       ; TODO: disable buttons when someone has already voted
        (= :correction-proposed state)
        (list (vote-for-correction-form game-id player-id)
              (vote-against-correction-form game-id player-id)))]))

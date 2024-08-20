@@ -46,6 +46,7 @@
              (fn [player-id]
                (endless-container game-id player-id))))
 
+; TODO: move out of :proposing-correction when proposer disconnects
 (defn disconnect-player [game-id player-id]
   (swap! live-games
          (fn [live-games]

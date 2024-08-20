@@ -92,6 +92,7 @@
                    [(players-view game-id)
                     (buttons game-id player-id)])))))
 
+; TODO: timeout correction proposal so it can't lock the game
 (defn propose-correction [game-id player-id]
   (when (transition! game-id
                      (fn [{:keys [name]}] (= name :showing-answer))
