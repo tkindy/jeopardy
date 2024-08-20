@@ -160,9 +160,11 @@
                      [:p {:margin 0
                           :color :black}]]]
                    ["#status-card" {:grid-area :status
-                                    :display :flex
-                                    :justify-content :center
-                                    :align-items :center
+                                    :display :grid
+                                    :grid-template-columns "1fr"
+                                    :grid-template-rows "1fr 1fr"
+                                    :align-items :stretch
+                                    :justify-items :stretch
                                     :font-size "1.5rem"}]
                    ["#buttons" {:grid-column "button1 / button2"
                                 :display :grid

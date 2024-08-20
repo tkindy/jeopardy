@@ -226,7 +226,7 @@
                                                    (vals (:correction-votes state)))]
                               (list [:p (str proposer " thinks " guesser " was " (if correct "wrong" "right"))]
                                     [:p (str yes " Yes | " no " No")]))
-       "Answer!")]))
+       [:p "Answer!"])]))
 
 (defn buttons [game-id player-id]
   (let [state (get-in @live-games [game-id :state :name])]
