@@ -173,9 +173,9 @@
 (defn vote-on-correction [game-id player-id supports?]
   (when-let [live-game (transition!
                         game-id
-                        (fn [{:keys [name proposer]}]
+                        (fn [{:keys [name correction-votes]}]
                           (and (= name :correction-proposed)
-                               (not= proposer player-id)))
+                               (not (contains? correction-votes player-id))))
                         (fn [{{:keys [correction-votes] :as state} :state
                               :keys [players]}]
                           (let [correction-votes (-> (assoc correction-votes player-id supports?)
