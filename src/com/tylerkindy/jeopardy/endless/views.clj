@@ -2,7 +2,8 @@
   (:require [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue]]
             [com.tylerkindy.jeopardy.db.players :refer [list-players]]
-            [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses get-guess]]
+            [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses get-guess
+                                                        already-corrected?]]
             [com.tylerkindy.jeopardy.endless.live :refer [live-games]])
   (:import [java.text NumberFormat]
            [java.time Duration]
@@ -90,16 +91,24 @@
    [:input {:name :type, :value :vote-against-correction, :hidden ""}]
    [:button "No (n)"]])
 
+(defn not-already-corrected? [game-id]
+  (-> (already-corrected? ds {:game-id game-id})
+      :exists
+      not))
+
 (defn can-propose-correction? [game-id player-id]
-  (-> @live-games
-      (get-in [game-id :state :name])
-      (not= :proposing-correction)))
+  (and (-> @live-games
+           (get-in [game-id :state :name])
+           (not= :proposing-correction))
+       (not-already-corrected? game-id)))
 
 (defn propose-correction-form [game-id player-id]
   [:form#propose-correction-form {:ws-send ""
                                   :hx-trigger "click, keyup[key=='c'] from:body"}
    [:input {:name :type, :value :propose-correction, :hidden ""}]
-   [:button {:disable (if (can-propose-correction? game-id player-id) false "")}
+   [:button {:disabled (if (can-propose-correction? game-id player-id)
+                         false
+                         "")}
     "Propose correction (c)"]])
 
 (defn can-skip? [game-id player-id]

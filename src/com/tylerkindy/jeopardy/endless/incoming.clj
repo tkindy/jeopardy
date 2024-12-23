@@ -11,8 +11,8 @@
             [com.tylerkindy.jeopardy.endless.live :refer [live-games send-all! transition!]]
             [com.tylerkindy.jeopardy.endless.views :refer [answer-card buttons buzz-time-left-view
                                                            category-reveal-time-left-view
-                                                           endless-container new-question-form
-                                                           players-view status-view overlay]]
+                                                           endless-container players-view
+                                                           status-view overlay not-already-corrected?]]
             [com.tylerkindy.jeopardy.clues :refer [random-clue next-category-clue]]
             [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.time :refer [now]]
@@ -94,13 +94,14 @@
 
 ; TODO: timeout correction proposal so it can't lock the game
 (defn propose-correction [game-id player-id]
-  (when (transition! game-id
-                     (fn [{:keys [name]}] (= name :showing-answer))
-                     (fn [{{:keys [attempted skip-votes]} :state}]
-                       {:name :proposing-correction
-                        :proposer player-id
-                        :attempted attempted
-                        :skip-votes skip-votes}))
+  (when (and (not-already-corrected? game-id)
+             (transition! game-id
+                          (fn [{:keys [name]}] (= name :showing-answer))
+                          (fn [{{:keys [attempted skip-votes]} :state}]
+                            {:name :proposing-correction
+                             :proposer player-id
+                             :attempted attempted
+                             :skip-votes skip-votes})))
     (send-all! game-id
                (fn [player-id]
                  [(players-view game-id)

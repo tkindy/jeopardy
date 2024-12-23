@@ -32,3 +32,16 @@ ORDER BY g.id;
 UPDATE guesses
 SET overridden = TRUE
 WHERE id = :id;
+
+-- :name already-corrected? :? :1
+SELECT EXISTS (
+  SELECT 1
+  FROM guesses
+  WHERE clue_id = (
+    SELECT id FROM endless_clues
+    WHERE game_id = :game-id
+    ORDER BY id DESC
+    LIMIT 1
+  )
+    AND overridden
+);
