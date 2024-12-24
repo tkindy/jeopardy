@@ -17,7 +17,8 @@
 (defn buzzing-form [game-id player-id]
   (let [{state :name
          buzzed-in-id :buzzed-in
-         attempted :attempted}
+         attempted :attempted
+         locked-out :locked-out}
         (get-in @live-games [game-id :state])
 
         [type button-text] (if (and (= state :answering)
@@ -27,7 +28,11 @@
         form-attrs (if (= type :buzz-in)
                      {:hx-trigger "click, keyup[key==' '] from:body"}
                      nil)
-        button-attrs (if (or (#{:no-clue :drawing-clue :revealing-category :showing-answer}
+        locked-out-deadline (get locked-out player-id)
+        locked-out? (and locked-out-deadline
+                         (> locked-out-deadline (System/nanoTime)))
+        button-attrs (if (or locked-out?
+                             (#{:no-clue :drawing-clue :revealing-category :showing-answer}
                               state)
                              (and (= state :answering)
                                   (not= buzzed-in-id player-id))
