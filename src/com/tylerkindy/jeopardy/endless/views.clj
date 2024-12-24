@@ -59,6 +59,11 @@
     (when buzz-deadline
       [:p#buzz-time-left [:i (buzz-time-left buzz-deadline)]])))
 
+(defn read-question-time-left-view [game-id]
+  (let [{:keys [read-deadline]} (get-in @live-games [game-id :state])]
+    (when read-deadline
+      [:p (seconds-left read-deadline)])))
+
 (defn category-reveal-time-left [left]
   [:p#category-reveal-time-left left])
 
@@ -216,6 +221,7 @@
   (let [state (get-in @live-games [game-id :state])]
     [:div#status-card.card
      (condp = (:name state)
+       :reading-question (read-question-time-left-view game-id)
        :proposing-correction "Proposing correction"
        :correction-proposed (let [players (->> (list-players ds {:game-id game-id})
                                                (map (fn [player] [(:id player) player]))

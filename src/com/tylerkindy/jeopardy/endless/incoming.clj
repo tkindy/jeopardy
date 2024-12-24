@@ -1,8 +1,10 @@
 (ns com.tylerkindy.jeopardy.endless.incoming
   (:require [cheshire.core :as json]
+            [clojure.math :as math]
             [clojure.set :as set]
             [com.tylerkindy.jeopardy.answer :refer [normalize-answer correct?]]
-            [com.tylerkindy.jeopardy.constants :refer [category-reveal-duration max-buzz-duration]]
+            [com.tylerkindy.jeopardy.constants :refer [category-reveal-duration max-buzz-duration
+                                                       reading-speed-wps]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.games :refer [get-game]]
@@ -17,15 +19,43 @@
             [com.tylerkindy.jeopardy.mode :as mode]
             [com.tylerkindy.jeopardy.time :refer [now]]
             [hiccup.util :refer [escape-html]]
-            [next.jdbc :as jdbc])
-  (:import [java.util Timer TimerTask]))
+            [next.jdbc :as jdbc]
+            [clojure.string :as str])
+  (:import [java.util Timer TimerTask]
+           [java.time Duration]))
 
 (defn should-show-answer? [players attempted skip-votes]
   (set/subset? (set (keys players))
                (set/union skip-votes
                           (set (keys (or attempted {}))))))
 
-(defn category-reveal-timer-update-task [game-id]
+(defn read-question-timer-update-task [game-id]
+  (let [last-view (atom nil)]
+    (proxy [TimerTask] []
+      (run []
+        (let [deadline (get-in @live-games [game-id :state :read-deadline])]
+          (if (> (- deadline (System/nanoTime)) 0)
+            (let [view (status-view game-id)]
+              (when (not= view @last-view)
+                (send-all! game-id view)
+                (reset! last-view view)))
+            (do
+              (.cancel this)
+              (swap! live-games assoc-in [game-id :state]
+                     {:name :open-for-answers, :attempted {}})
+              (send-all! game-id
+                         (fn [player-id]
+                           (endless-container game-id player-id))))))))))
+
+(defn question-reading-duration [{:keys [question]}]
+  (-> question
+      (str/split #"\s+")
+      count
+      (/ reading-speed-wps)
+      math/ceil
+      Duration/ofSeconds))
+
+(defn category-reveal-timer-update-task [game-id clue]
   (let [last-view (atom nil)]
     (proxy [TimerTask] []
       (run []
@@ -38,16 +68,25 @@
             (do
               (.cancel this)
               (swap! live-games assoc-in [game-id :state]
-                     {:name :open-for-answers, :attempted {}})
+                     {:name :reading-question
+                      :read-deadline (+ (System/nanoTime)
+                                        (.toNanos (question-reading-duration clue)))})
               (send-all! game-id
                          (fn [player-id]
-                           (endless-container game-id player-id))))))))))
+                           (endless-container game-id player-id)))
+              (.schedule (Timer.)
+                         (read-question-timer-update-task game-id)
+                         0
+                         50))))))))
 
-(defn reveal-category [game-id]
+(defn reveal-category [game-id clue]
   (swap! live-games assoc-in [game-id :state]
-         {:name :revealing-category,
+         {:name :revealing-category
           :reveal-deadline (+ (System/nanoTime) (.toNanos category-reveal-duration))})
-  (.schedule (Timer.) (category-reveal-timer-update-task game-id) 0 50))
+  (.schedule (Timer.)
+             (category-reveal-timer-update-task game-id clue)
+             0
+             50))
 
 (defn pick-clue [game-id]
   (let [{:keys [mode]} (get-game ds {:id game-id})]
@@ -60,7 +99,7 @@
                  (select-keys [:lib-clue-id :category :airdate :question :answer :value])
                  (assoc :game-id game-id))]
     (insert-clue ds clue)
-    (reveal-category game-id)
+    (reveal-category game-id clue)
     (send-all! game-id
                (fn [player-id]
                  (endless-container game-id player-id)))))
