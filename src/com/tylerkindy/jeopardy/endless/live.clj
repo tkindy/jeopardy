@@ -22,6 +22,7 @@
                                            {}
                                            guesses)}
       :else            {:name :open-for-answers
+                        :locked-out {}
                         :attempted {}})))
 
 (defn build-game [game-id]

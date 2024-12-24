@@ -17,7 +17,8 @@
 (defn buzzing-form [game-id player-id]
   (let [{state :name
          buzzed-in-id :buzzed-in
-         attempted :attempted}
+         attempted :attempted
+         locked-out :locked-out}
         (get-in @live-games [game-id :state])
 
         [type button-text] (if (and (= state :answering)
@@ -27,7 +28,11 @@
         form-attrs (if (= type :buzz-in)
                      {:hx-trigger "click, keyup[key==' '] from:body"}
                      nil)
-        button-attrs (if (or (#{:no-clue :drawing-clue :revealing-category :showing-answer}
+        locked-out-deadline (get locked-out player-id)
+        locked-out? (and locked-out-deadline
+                         (> locked-out-deadline (System/nanoTime)))
+        button-attrs (if (or locked-out?
+                             (#{:no-clue :drawing-clue :revealing-category :showing-answer}
                               state)
                              (and (= state :answering)
                                   (not= buzzed-in-id player-id))
@@ -58,6 +63,11 @@
   (let [{:keys [buzz-deadline]} (get-in @live-games [game-id :state])]
     (when buzz-deadline
       [:p#buzz-time-left [:i (buzz-time-left buzz-deadline)]])))
+
+(defn read-question-time-left-view [game-id]
+  (let [{:keys [read-deadline]} (get-in @live-games [game-id :state])]
+    (when read-deadline
+      [:p (seconds-left read-deadline)])))
 
 (defn category-reveal-time-left [left]
   [:p#category-reveal-time-left left])
@@ -216,6 +226,7 @@
   (let [state (get-in @live-games [game-id :state])]
     [:div#status-card.card
      (condp = (:name state)
+       :reading-question (read-question-time-left-view game-id)
        :proposing-correction "Proposing correction"
        :correction-proposed (let [players (->> (list-players ds {:game-id game-id})
                                                (map (fn [player] [(:id player) player]))
@@ -241,8 +252,8 @@
   (let [state (get-in @live-games [game-id :state :name])]
     [:div#buttons
      (cond
-       (#{:drawing-clue :revealing-category :open-for-answers
-          :answering}
+       (#{:drawing-clue :revealing-category :reading-question
+          :open-for-answers :answering}
         state)
        (list
         (buzzing-form game-id player-id)
