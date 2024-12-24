@@ -56,4 +56,4 @@
                            (map (fn [v] (html v)))
                            (str/join "\n"))
                       (html to-send))]
-        (send! channel (html to-send))))))
+        (send! channel to-send)))))
