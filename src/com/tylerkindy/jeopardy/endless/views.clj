@@ -247,8 +247,8 @@
   (let [state (get-in @live-games [game-id :state :name])]
     [:div#buttons
      (cond
-       (#{:drawing-clue :revealing-category :open-for-answers
-          :answering}
+       (#{:drawing-clue :revealing-category :reading-question
+          :open-for-answers :answering}
         state)
        (list
         (buzzing-form game-id player-id)
