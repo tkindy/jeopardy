@@ -70,7 +70,8 @@
               (swap! live-games assoc-in [game-id :state]
                      {:name :reading-question
                       :read-deadline (+ (System/nanoTime)
-                                        (.toNanos (question-reading-duration clue)))})
+                                        (.toNanos (question-reading-duration clue)))
+                      :locked-out {}})
               (send-all! game-id
                          (fn [player-id]
                            (endless-container game-id player-id)))
