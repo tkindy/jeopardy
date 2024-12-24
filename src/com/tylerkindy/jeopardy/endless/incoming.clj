@@ -349,6 +349,16 @@
       (.schedule (buzz-timeout-task game-id player-id current-clue-id update-task)
                  (.toMillis max-buzz-duration)))))
 
+; TODO: pass in deadline to be more exact
+(defn start-lock-out-timeout [game-id]
+  (.schedule (Timer.)
+             (proxy [TimerTask] []
+               (run []
+                 (send-all! game-id
+                            (fn [player-id]
+                              (buttons game-id player-id)))))
+             (.toMillis lock-out-duration)))
+
 (defn buzz-in [game-id player-id]
   (let [game (transition! game-id
                           (fn [{:keys [name locked-out attempted]}]
@@ -370,9 +380,13 @@
                                :buzzed-in player-id
                                :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))})))]
 
-    (when (and game
-               (= (get-in game [:state :name]) :answering))
-      (start-buzzed-countdown game-id player-id))
+    (when game
+      (cond
+        (= (get-in game [:state :name]) :answering)
+        (start-buzzed-countdown game-id player-id)
+
+        (= (get-in game [:state :name]) :reading-question)
+        (start-lock-out-timeout game-id)))
 
     (send-all! game-id
                (fn [player-id]
