@@ -7,7 +7,7 @@
   com.layerware/hugsql-core {:mvn/version "0.5.3"}
   com.zaxxer/HikariCP {:mvn/version "5.0.1"}
   compojure/compojure {:mvn/version "1.7.0"}
-  garden/garden {:mvn/version "1.3.10"}
+  com.lambdaisland/garden {:mvn/version "1.6.585"}
   hiccup/hiccup {:mvn/version "1.0.5"}
   http-kit/http-kit {:mvn/version "2.6.0"}
   io.github.yogthos/migratus {:git/tag "v1.4.6", :git/sha "ba7f949"}
