@@ -5,7 +5,8 @@
             [com.tylerkindy.jeopardy.db.guesses :refer [get-current-guesses]]
             [hiccup.core :refer [html]]
             [org.httpkit.server :refer [send!]])
-  (:import [java.util.concurrent CyclicBarrier]))
+  (:import [java.util.concurrent CyclicBarrier]
+           [java.util.concurrent Executors]))
 
 (defonce live-games (atom {}))
 
@@ -47,19 +48,23 @@
 
 (defn send-all! [game-id message]
   (let [players (get-in @live-games [game-id :players])
-        barrier (CyclicBarrier. (count players))]
-    (doseq [[player-id channel] players]
-      (.start (Thread/ofVirtual)
-              (fn []
-                (let [to-send (if (fn? message)
-                                (message player-id)
-                                message)
-                      to-send (if (and (sequential? to-send)
-                                       (vector? (first to-send)))
-                                (->> to-send
-                                     (map (fn [v] (html v)))
-                                     (str/join "\n"))
-                                (html to-send))]
+        barrier (CyclicBarrier. (count players))
+        tasks (map (fn [[player-id channel]]
+                     (fn []
+                       (let [to-send (if (fn? message)
+                                       (message player-id)
+                                       message)
+                             to-send (if (and (sequential? to-send)
+                                              (vector? (first to-send)))
+                                       (->> to-send
+                                            (map (fn [v] (html v)))
+                                            (str/join "\n"))
+                                       (html to-send))]
 
-                  (.await barrier)
-                  (send! channel to-send)))))))
+                         (.await barrier)
+                         (send! channel to-send))))
+                   players)
+        executor (Executors/newVirtualThreadPerTaskExecutor)]
+    (doseq [future (.invokeAll executor tasks)]
+      (.get future))
+    (.shutdown executor)))
