@@ -6,3 +6,5 @@
 
 ; Seconds per word
 (def reading-speed-wps 4)
+
+(def lock-out-duration (Duration/ofMillis 500))

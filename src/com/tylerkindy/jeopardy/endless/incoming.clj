@@ -4,7 +4,7 @@
             [clojure.set :as set]
             [com.tylerkindy.jeopardy.answer :refer [normalize-answer correct?]]
             [com.tylerkindy.jeopardy.constants :refer [category-reveal-duration max-buzz-duration
-                                                       reading-speed-wps]]
+                                                       reading-speed-wps lock-out-duration]]
             [com.tylerkindy.jeopardy.db.core :refer [ds]]
             [com.tylerkindy.jeopardy.db.endless-clues :refer [get-current-clue insert-clue mark-answered]]
             [com.tylerkindy.jeopardy.db.games :refer [get-game]]
@@ -41,8 +41,12 @@
                 (reset! last-view view)))
             (do
               (.cancel this)
-              (swap! live-games assoc-in [game-id :state]
-                     {:name :open-for-answers, :attempted {}})
+              (transition! game-id
+                           (constantly true)
+                           (fn [{{:keys [locked-out]} :state}]
+                             {:name :open-for-answers
+                              :locked-out locked-out
+                              :attempted {}}))
               (send-all! game-id
                          (fn [player-id]
                            (endless-container game-id player-id))))))))))
@@ -67,11 +71,12 @@
                 (reset! last-view view)))
             (do
               (.cancel this)
-              (swap! live-games assoc-in [game-id :state]
-                     {:name :reading-question
-                      :read-deadline (+ (System/nanoTime)
-                                        (.toNanos (question-reading-duration clue)))
-                      :locked-out {}})
+              (transition! game-id
+                           (constantly true)
+                           {:name :reading-question
+                            :read-deadline (+ (System/nanoTime)
+                                              (.toNanos (question-reading-duration clue)))
+                            :locked-out {}})
               (send-all! game-id
                          (fn [player-id]
                            (endless-container game-id player-id)))
@@ -329,8 +334,9 @@
                              (and (= name :answering)
                                   (= buzzed-in player-id)
                                   (= clue-id current-clue-id)))
-                           (fn [{{:keys [attempted skip-votes]} :state}]
+                           (fn [{{:keys [locked-out attempted skip-votes]} :state}]
                              {:name :timing-out
+                              :locked-out locked-out
                               :skip-votes skip-votes
                               :attempted (assoc-in attempted [player-id :guess] "")}))
           (wrong-answer game-id player-id value))))))
@@ -344,16 +350,30 @@
                  (.toMillis max-buzz-duration)))))
 
 (defn buzz-in [game-id player-id]
-  (when (transition! game-id
-                     (fn [{:keys [name attempted]}] (and (= name :open-for-answers)
-                                                         (not (attempted player-id))))
-                     (fn [{{:keys [attempted skip-votes]} :state}]
-                       {:name :answering
-                        :attempted (assoc attempted player-id {})
-                        :skip-votes skip-votes
-                        :buzzed-in player-id
-                        :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))}))
-    (start-buzzed-countdown game-id player-id)
+  (let [game (transition! game-id
+                          (fn [{:keys [name locked-out attempted]}]
+                            (let [lock-out-deadline ((or locked-out {}) player-id)]
+                              (and (or (not lock-out-deadline)
+                                       (>= (System/nanoTime) lock-out-deadline))
+                                   (or (= name :reading-question)
+                                       (and (= name :open-for-answers)
+                                            (not (attempted player-id)))))))
+                          (fn [{{:keys [name locked-out attempted skip-votes] :as state} :state}]
+                            (if (= name :reading-question)
+                              (assoc-in state
+                                        [:locked-out player-id]
+                                        (+ (System/nanoTime) (.toNanos lock-out-duration)))
+                              {:name :answering
+                               :locked-out locked-out
+                               :attempted (assoc attempted player-id {})
+                               :skip-votes skip-votes
+                               :buzzed-in player-id
+                               :buzz-deadline (+ (System/nanoTime) (.toNanos max-buzz-duration))})))]
+
+    (when (and game
+               (= (get-in game [:state :name]) :answering))
+      (start-buzzed-countdown game-id player-id))
+
     (send-all! game-id
                (fn [player-id]
                  (endless-container game-id player-id)))))
@@ -367,10 +387,10 @@
                                                  player-id))))
                           (fn [{:keys [state]}]
                             (-> state
-                                (select-keys [:attempted :skip-votes])
+                                (select-keys [:locked-out :attempted :skip-votes])
                                 (assoc :name :voting-to-skip))))]
     (let [{:keys [state players]} game
-          {:keys [attempted skip-votes]} state
+          {:keys [locked-out attempted skip-votes]} state
           skip-votes (or skip-votes #{})
           skip-votes (if player-id
                        (conj skip-votes player-id)
@@ -385,6 +405,7 @@
                (assoc-in live-games
                          [game-id :state]
                          {:name new-state
+                          :locked-out locked-out
                           :attempted attempted
                           :skip-votes skip-votes})))
       (if (= new-state :showing-answer)
@@ -400,8 +421,9 @@
                        (fn [{:keys [name buzzed-in]}]
                          (and (= name :answering)
                               (= player-id buzzed-in)))
-                       (fn [{{:keys [attempted skip-votes]} :state}]
+                       (fn [{{:keys [locked-out attempted skip-votes]} :state}]
                          {:name :checking-answer
+                          :locked-out locked-out
                           :attempted (assoc-in attempted [player-id :guess] guess)
                           :skip-votes skip-votes}))
       (let [{clue-id :id, :keys [answer value]} (get-current-clue ds {:game-id game-id})
