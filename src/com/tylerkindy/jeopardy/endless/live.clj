@@ -48,24 +48,27 @@
     (and (not= old new) (get new game-id))))
 
 (defn send-all! [game-id message]
-  (let [players (get-in @live-games [game-id :players])
-        barrier (CyclicBarrier. (count players))
-        tasks (map (fn [[player-id channel]]
-                     (fn []
-                       (let [to-send (if (fn? message)
-                                       (message player-id)
-                                       message)
-                             to-send (if (and (sequential? to-send)
-                                              (vector? (first to-send)))
-                                       (->> to-send
-                                            (map (fn [v] (html v)))
-                                            (str/join "\n"))
-                                       (html to-send))]
+  (let [players (-> @live-games
+                    (get-in [game-id :players])
+                    seq)]
+    (when (seq? players)
+      (let [barrier (CyclicBarrier. (count players))
+            tasks (map (fn [[player-id channel]]
+                         (fn []
+                           (let [to-send (if (fn? message)
+                                           (message player-id)
+                                           message)
+                                 to-send (if (and (sequential? to-send)
+                                                  (vector? (first to-send)))
+                                           (->> to-send
+                                                (map (fn [v] (html v)))
+                                                (str/join "\n"))
+                                           (html to-send))]
 
-                         (.await barrier)
-                         (send! channel to-send))))
-                   players)
-        executor (Executors/newVirtualThreadPerTaskExecutor)]
-    (doseq [future (.invokeAll executor tasks)]
-      (.get future))
-    (.shutdown executor)))
+                             (.await barrier)
+                             (send! channel to-send))))
+                       players)
+            executor (Executors/newVirtualThreadPerTaskExecutor)]
+        (doseq [future (.invokeAll executor tasks)]
+          (.get future))
+        (.shutdown executor)))))
