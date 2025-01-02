@@ -386,11 +386,11 @@
         (start-buzzed-countdown game-id player-id)
 
         (= (get-in game [:state :name]) :reading-question)
-        (start-lock-out-timeout game-id)))
+        (start-lock-out-timeout game-id))
 
-    (send-all! game-id
-               (fn [player-id]
-                 (endless-container game-id player-id)))))
+      (send-all! game-id
+                 (fn [player-id]
+                   (endless-container game-id player-id))))))
 
 (defn vote-to-skip [game-id player-id]
   (when-let [game
