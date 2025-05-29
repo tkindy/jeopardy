@@ -12,9 +12,9 @@
   (read-as-local)
   (hugsql/set-adapter! (hugsql-adapter-next-jdbc {:builder-fn as-unqualified-kebab-maps}))
   (->pool HikariDataSource
-          (-> (:db config)
+          (-> (:db @config)
               (assoc :dbtype "postgresql")
-              (assoc :username (get-in config [:db :user]))
+              (assoc :username (get-in @config [:db :user]))
               (dissoc :user))))
 
 (defstate ds

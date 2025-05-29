@@ -1,24 +1,26 @@
 (ns com.tylerkindy.jeopardy.config
-  (:require [mount.core :refer [defstate] :as mount]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.tools.cli :refer [parse-opts]]))
+  (:require [clojure.string :as str]
+            [dotenv :refer [env]]))
 
-(defstate file-config
-  :start (edn/read (java.io.PushbackReader.
-                    (io/reader "config.edn"))))
+(defn- my-env
+  ([key]
+   (my-env key (fn [] (throw (RuntimeException. (str "No or blank value for environment variable " key))))))
+  ([key default]
+   (let [value (env key)]
+     (if (or (nil? value) (str/blank? value))
+       (if (fn? default)
+         (default)
+         default)
+       value))))
 
-(def cli-options
-  [["-p" "--port PORT" "Port number"
-    :default 8080
-    :parse-fn #(Integer/parseInt %)
-    :validate [#(< 0 % 65536) "Must be a number between 0 and 65536"]]])
-
-(defstate cli-args
-  :start (let [parsed (parse-opts (:cli-args (mount/args)) cli-options)]
-           (when (:errors parsed)
-             (throw (RuntimeException. (str (:errors parsed)))))
-           (:options parsed)))
-
-(defstate config
-  :start (assoc-in file-config [:http :port] (:port cli-args)))
+(def config
+  (delay
+    {:http {:session-secret (my-env "HTTP_SESSION_SECRET")
+            :port (parse-long (my-env "HTTP_PORT" "80"))}
+     :db {:host (my-env "DB_HOST" "localhost")
+          :dbname (my-env "DB_NAME")
+          :user (my-env "DB_USER")
+          :password (my-env "DB_PASSWORD")
+          :migrate-on-startup? (parse-boolean (my-env "DB_MIGRATE_ON_STARTUP" "true"))}
+     :player-id-spot (some-> (my-env "PLAYER_ID_SPOT" nil)
+                             keyword)}))

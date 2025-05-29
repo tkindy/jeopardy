@@ -5,7 +5,7 @@
 
 (defstate migration-config
   :start {:store :database
-          :db (-> (:db config)
+          :db (-> (:db @config)
                   (assoc :dbtype "postgresql"))})
 
 (defn migrate []
