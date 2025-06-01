@@ -44,7 +44,6 @@ builder:
 env:
   clear:
     DB_HOST: jeopardy-db
-    DB_PORT: 5433
     DB_NAME: jeopardy
     DB_USER: jeopardy
   secret:
@@ -85,7 +84,6 @@ accessories:
   db:
     image: postgres:16
     host: 69.164.220.122
-    port: "127.0.0.1:5433:5432"
     env:
       clear:
         POSTGRES_USER: jeopardy
