@@ -20,6 +20,6 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /build/target/jeopardy.jar jeopardy.jar
-COPY jeopardy.db.gz.age jeopardy.db.gz.age
+COPY jeopardy.db.gz.age ./
 
 CMD ["java", "-jar", "jeopardy.jar"]
