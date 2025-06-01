@@ -11,9 +11,11 @@
             [com.tylerkindy.jeopardy.config :refer [config]])
   (:import [java.time LocalDate]))
 
-(def ds (get-datasource {:dbtype "sqlite"
-                         :dbname (str (:temp-dir @config)
-                                      "/jeopardy.db")}))
+(def ds
+  (delay
+    (get-datasource {:dbtype "sqlite"
+                     :dbname (str (:temp-dir @config)
+                                  "/jeopardy.db")})))
 
 (defn valid-answer? [answer]
   (seq (char-pairs answer)))
@@ -31,7 +33,7 @@
       (update :airdate #(LocalDate/parse %))))
 
 (defn random-clues [n]
-  (->> (get-random-clues ds {:limit n})
+  (->> (get-random-clues @ds {:limit n})
        (filter valid-clue?)
        (map clean-clue)))
 
@@ -39,17 +41,17 @@
   (first (random-clues 10)))
 
 (defn pick-from-random-category []
-  (let [{category-id :id} (get-random-category ds)
-        {:keys [game-id]} (get-random-game-with-category ds {:category-id category-id})]
-    (get-next-category-clue ds {:game-id game-id
-                                :category-id category-id
-                                :last-value -1})))
+  (let [{category-id :id} (get-random-category @ds)
+        {:keys [game-id]} (get-random-game-with-category @ds {:category-id category-id})]
+    (get-next-category-clue @ds {:game-id game-id
+                                 :category-id category-id
+                                 :last-value -1})))
 
 (defn pick-next-category-clue [clue-id]
   (if clue-id
-    (let [category-info (-> (clue-category-info ds {:clue-id clue-id})
+    (let [category-info (-> (clue-category-info @ds {:clue-id clue-id})
                             (rename-keys {:value :last-value}))
-          next-clue (get-next-category-clue ds category-info)]
+          next-clue (get-next-category-clue @ds category-info)]
       (if next-clue
         next-clue
         (pick-from-random-category)))
