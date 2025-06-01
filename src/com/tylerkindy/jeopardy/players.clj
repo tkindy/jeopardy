@@ -10,7 +10,7 @@
         result (insert-player ds {:game-id game-id, :name (escape-html name)})
         id (get-in result [0 :id])
         url (str "/games/" game-id)
-        [session url] (if (= (:player-id-spot config) :query-param)
+        [session url] (if (= (:player-id-spot @config) :query-param)
                         [session (str url "?playerId=" id)]
                         [(assoc session :id id) url])]
     {:status 303

@@ -1,11 +1,9 @@
 (ns build
   (:require [clojure.tools.build.api :as b]))
 
-(def lib 'com.tylerkindy/jeopardy)
-(def version (format "1.0.%s" (b/git-count-revs nil)))
-(def class-dir "target/classes")
-(def basis (b/create-basis {:project "deps.edn"}))
-(def uber-file (format "target/%s-%s-standalone.jar" (name lib) version))
+(def output-dir "target")
+(def class-dir (str output-dir "/classes"))
+(def basis (delay (b/create-basis {:project "deps.edn"})))
 
 (defn clean [_]
   (b/delete {:path "target"}))
@@ -14,10 +12,10 @@
   (clean nil)
   (b/copy-dir {:src-dirs ["src" "resources"]
                :target-dir class-dir})
-  (b/compile-clj {:basis basis
+  (b/compile-clj {:basis @basis
                   :src-dirs ["src"]
                   :class-dir class-dir})
   (b/uber {:class-dir class-dir
-           :uber-file uber-file
-           :basis basis
+           :uber-file (str output-dir "/jeopardy.jar")
+           :basis @basis
            :main 'com.tylerkindy.jeopardy.main}))

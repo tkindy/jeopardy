@@ -227,7 +227,7 @@
                    ["#corrections-table" {:width "100%"}])])
      [:body {:hx-ext "ws,morph"
              :ws-connect (let [url (str "/games/" game-id)]
-                           (if (= (:player-id-spot config) :query-param)
+                           (if (= (:player-id-spot @config) :query-param)
                              (str url "?playerId=" player-id)
                              url))}
       (endless-container game-id player-id)
