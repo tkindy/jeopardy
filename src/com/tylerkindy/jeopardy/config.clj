@@ -29,6 +29,7 @@
       {:http {:session-secret (my-env "HTTP_SESSION_SECRET")
               :port (parse-long (my-env "HTTP_PORT" "80"))}
        :db {:host (my-env "DB_HOST" "localhost")
+            :port (parse-long (my-env "DB_PORT" "5432"))
             :dbname (my-env "DB_NAME")
             :user (my-env "DB_USER")
             :password (my-env "DB_PASSWORD")
