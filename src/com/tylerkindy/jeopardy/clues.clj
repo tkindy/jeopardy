@@ -7,11 +7,13 @@
                                                         clue-category-info
                                                         get-next-category-clue
                                                         get-random-category
-                                                        get-random-game-with-category]])
+                                                        get-random-game-with-category]]
+            [com.tylerkindy.jeopardy.config :refer [config]])
   (:import [java.time LocalDate]))
 
 (def ds (get-datasource {:dbtype "sqlite"
-                         :dbname "jeopardy.db"}))
+                         :dbname (str (:temp-dir @config)
+                                      "/jeopardy.db")}))
 
 (defn valid-answer? [answer]
   (seq (char-pairs answer)))

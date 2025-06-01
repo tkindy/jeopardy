@@ -1,4 +1,4 @@
 config.edn
 target/
-jeopardy.db
+jeopardy.db.gz.age
 .env

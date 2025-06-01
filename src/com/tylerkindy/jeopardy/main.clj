@@ -5,7 +5,8 @@
             [ring.middleware.session.cookie :refer [cookie-store]]
             [com.tylerkindy.jeopardy.routes :refer [routes]]
             [com.tylerkindy.jeopardy.config :refer [config]]
-            [com.tylerkindy.jeopardy.db.migrations :refer [migrate]])
+            [com.tylerkindy.jeopardy.db.migrations :refer [migrate]]
+            [com.tylerkindy.jeopardy.prep :refer [prep-question-db]])
   (:gen-class))
 
 (defn parse-session-secret [secret]
@@ -34,4 +35,5 @@
   :stop (server-stop! server))
 
 (defn -main [& args]
+  (prep-question-db)
   (mount/start-with-args {:cli-args args}))
