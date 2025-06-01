@@ -5,6 +5,7 @@
             [com.tylerkindy.jeopardy.games :refer [game-routes]]))
 
 (defroutes routes
+  (GET "/up" [] {:status 200})
   (GET "/" [] {:status 200
                :headers {"Content-Type" "text/html"}
                :body (home)})
