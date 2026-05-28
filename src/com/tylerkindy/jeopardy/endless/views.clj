@@ -44,7 +44,9 @@
      [:input {:name :type, :value type, :hidden ""}]
      (if (= type :answer)
        (list
-        [:input.answer {:type :text, :name :answer, :autofocus "", :autocomplete :off}]
+        [:input.answer {:type :text, :name :answer,
+                        :autofocus "", :autocomplete :off,
+                        :spellcheck false}]
         [:button {:style "width: 0; height: 0; padding: 0; border: 0; margin: 0;"} ""])
        [:button button-attrs button-text])]))
 
