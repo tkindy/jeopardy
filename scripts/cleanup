@@ -1,3 +1,0 @@
-#!/usr/bin/env fish
-
-ssh jeopardy "bash -s" < scripts/exec-cleanup.sh
